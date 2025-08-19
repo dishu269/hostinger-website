@@ -1,0 +1,18 @@
+{
+    "_readme": [
+        "This file is generated automatically by Composer an is not intended to be edited manually. For more information, see https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
+    "content-hash": "THIS_IS_A_PLACEHOLDER_HASH_AS_COMPOSER_IS_NOT_AVAILABLE_IN_THE_ENVIRONMENT",
+    "packages": [],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": true,
+    "prefer-lowest": false,
+    "platform": {
+        "php": ">=8.0"
+    },
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
+}
