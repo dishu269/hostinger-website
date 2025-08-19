@@ -25,6 +25,10 @@ $csrf = generate_csrf_token();
           <?php if ($user['role'] === 'admin'): ?>
             <a href="/admin/index.php">Admin</a>
           <?php endif; ?>
+          <a href="/user/profile.php" style="display: inline-flex; align-items: center; gap: 8px;">
+            <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+            <span>My Profile</span>
+          </a>
           <a href="/user/dashboard.php">Dashboard</a>
           <a href="/user/learning.php">Learning</a>
           <a href="/user/tasks.php">Tasks</a>
