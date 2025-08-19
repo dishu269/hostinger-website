@@ -42,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 foreach (get_flashes() as $f) {
   $color = $f['type'] === 'success' ? '#10b981' : '#e11d48';
-  echo '<div class="card" style="border-left:4px solid ' . $color . ';margin-top:12px">' . htmlspecialchars($f['message']) . '</div>';
+  echo '<div class="card mt-3" style="border-left:4px solid ' . $color . '">' . htmlspecialchars($f['message']) . '</div>';
 }
 ?>
 
-<div class="card" style="margin-top:16px">
+<div class="card mt-4">
   <h2>Create Account <?= $defaultRole === 'admin' ? '(Admin)' : '' ?></h2>
   <form method="post">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
@@ -56,10 +56,9 @@ foreach (get_flashes() as $f) {
     <input type="email" name="email" required>
     <label>Password</label>
     <input type="password" name="password" minlength="6" required>
-    <div style="margin-top:12px"><button class="btn" type="submit">Register</button></div>
+    <div class="mt-3"><button class="btn" type="submit">Register</button></div>
   </form>
-  <p style="margin-top:8px;color:#6b7280">
-  <p style="margin-top:8px"><a href="/login.php">Already have an account?</a></p>
+  <p class="mt-2"><a href="/login.php">Already have an account?</a></p>
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
