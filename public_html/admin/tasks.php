@@ -46,44 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           set_flash('success', 'Task created.');
         }
       }
-    } elseif ($action === 'update') {
-      $id = (int)($_POST['id'] ?? 0);
-      $title = sanitize_text($_POST['title'] ?? '', 200);
-      $description = sanitize_text($_POST['description'] ?? '', 1000);
-      $taskDate = $_POST['task_date'] ?: null;
-      $isDaily = isset($_POST['is_daily']) ? 1 : 0;
-      $type = in_array(($_POST['type'] ?? 'custom'), ['prospecting','followup','training','event','custom'], true) ? $_POST['type'] : 'custom';
-      $target = sanitize_int($_POST['target_count'] ?? 0, 0, 100000);
-      $impact = sanitize_int($_POST['impact_score'] ?? 1, 1, 5);
-      $effort = sanitize_int($_POST['effort_score'] ?? 1, 1, 5);
-      $priority = in_array(($_POST['priority'] ?? 'medium'), ['low','medium','high'], true) ? $_POST['priority'] : 'medium';
-      $dueTime = $_POST['due_time'] ?: null;
-      $repeatRule = in_array(($_POST['repeat_rule'] ?? 'none'), ['none','daily','weekly'], true) ? $_POST['repeat_rule'] : 'none';
-      $scriptA = sanitize_text($_POST['script_a'] ?? '', 5000);
-      $scriptB = sanitize_text($_POST['script_b'] ?? '', 5000);
-      $isTemplate = isset($_POST['is_template']) ? 1 : 0;
-      $templateName = $isTemplate ? sanitize_text($_POST['template_name'] ?? '', 120) : null;
-      $assignedTo = ($_POST['assigned_to'] ?? '') !== '' ? (int)$_POST['assigned_to'] : null;
-
-      $stmt = $pdo->prepare('UPDATE tasks SET title=?, description=?, task_date=?, is_daily=?, type=?, target_count=?, impact_score=?, effort_score=?, priority=?, due_time=?, repeat_rule=?, script_a=?, script_b=?, is_template=?, template_name=?, assigned_to=? WHERE id = ?');
-      $stmt->execute([$title, $description, $taskDate, $isDaily, $type, $target, $impact, $effort, $priority, $dueTime, $repeatRule, $scriptA, $scriptB, $isTemplate, $templateName, $assignedTo, $id]);
-      set_flash('success', 'Task updated.');
     } elseif ($action === 'delete') {
       $id = (int)($_POST['id'] ?? 0);
       $pdo->prepare('DELETE FROM tasks WHERE id = ?')->execute([$id]);
       set_flash('success', 'Task deleted.');
-    } elseif ($action === 'add_asset') {
-      $taskId = (int)($_POST['task_id'] ?? 0);
-      $title = sanitize_text($_POST['asset_title'] ?? '', 200);
-      $url = sanitize_text($_POST['asset_url'] ?? '', 500);
-      if ($taskId && $title !== '' && $url !== '') {
-        $pdo->prepare('INSERT INTO task_assets (task_id, title, url) VALUES (?,?,?)')->execute([$taskId, $title, $url]);
-        set_flash('success', 'Asset added.');
-      }
-    } elseif ($action === 'delete_asset') {
-      $assetId = (int)($_POST['asset_id'] ?? 0);
-      $pdo->prepare('DELETE FROM task_assets WHERE id = ?')->execute([$assetId]);
-      set_flash('success', 'Asset deleted.');
     } elseif ($action === 'bulk_delete') {
       $ids = array_map('intval', $_POST['ids'] ?? []);
       if ($ids) {
@@ -279,96 +245,57 @@ foreach (get_flashes() as $f) {
       <div style="margin-top:12px"><button class="btn">Create</button></div>
     </form>
     <h3>All Tasks</h3>
-    <form method="post" id="bulkForm">
-      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-      <input type="hidden" name="action" value="bulk_delete">
+    <form method="post" id="bulkActionForm">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+        <input type="hidden" name="action" value="bulk_delete">
+        <div style="margin-bottom: 12px;">
+            <button type="submit" class="btn btn-outline" onclick="return confirm('Are you sure you want to delete all selected tasks?')">Delete Selected</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th><input type="checkbox" onclick="document.querySelectorAll('.task-checkbox').forEach(c => c.checked = this.checked)"></th>
+              <th>Title</th>
+              <th>Type</th>
+              <th>Priority</th>
+              <th>Date</th>
+              <th>Daily</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if (empty($tasks)): ?>
+              <tr><td colspan="8" style="text-align: center;">No tasks found.</td></tr>
+            <?php endif; ?>
+            <?php foreach($tasks as $t): ?>
+            <tr>
+              <td><input type="checkbox" name="ids[]" value="<?= (int)$t['id'] ?>" class="task-checkbox"></td>
+              <td><?= htmlspecialchars($t['title']) ?></td>
+              <td><span class="badge"><?= htmlspecialchars(ucfirst($t['type'])) ?></span></td>
+              <td><?= htmlspecialchars(ucfirst($t['priority'])) ?></td>
+              <td><?= htmlspecialchars($t['task_date'] ?? 'N/A') ?></td>
+              <td><?= (int)$t['is_daily'] ? 'Yes' : 'No' ?></td>
+              <td style="display:flex; gap: 6px; align-items: center;">
+                <a href="/admin/edit_task.php?id=<?= (int)$t['id'] ?>" class="btn btn-outline">Edit</a>
+                <form method="post" onsubmit="return confirm('Are you sure you want to delete this task?')">
+                  <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
+                  <button class="btn btn-outline">Delete</button>
+                </form>
+                <form method="post" onsubmit="return confirm('Clone this task for today?')">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+                    <input type="hidden" name="action" value="clone">
+                    <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
+                    <input type="hidden" name="new_task_date" value="<?= date('Y-m-d') ?>">
+                    <button class="btn btn-outline">Clone for Today</button>
+                </form>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
     </form>
-    <table>
-      <thead><tr><th>Title</th><th>Type</th><th>Target</th><th>Priority</th><th>Date</th><th>Daily</th><th>Assigned</th><th>Actions</th></tr></thead>
-      <tbody>
-        <?php foreach($tasks as $t): ?>
-        <tr>
-          <td>
-            <form method="post" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap">
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-              <input type="hidden" name="action" value="update">
-              <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
-              <input type="text" name="title" value="<?= htmlspecialchars($t['title']) ?>">
-          </td>
-          <td>
-            <select name="type">
-              <?php foreach(['prospecting','followup','training','event','custom'] as $opt): ?>
-                <option value="<?= $opt ?>" <?= $t['type']===$opt?'selected':'' ?>><?= ucfirst($opt) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </td>
-          <td><input type="number" name="target_count" value="<?= (int)$t['target_count'] ?>" min="0" style="width:90px"></td>
-          <td>
-            <select name="priority">
-              <?php foreach(['low','medium','high'] as $p): ?>
-                <option value="<?= $p ?>" <?= $t['priority']===$p?'selected':'' ?>><?= ucfirst($p) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </td>
-          <td><input type="date" name="task_date" value="<?= htmlspecialchars($t['task_date'] ?? '') ?>"></td>
-          <td><input type="checkbox" name="is_daily" <?= (int)$t['is_daily'] ? 'checked' : '' ?>></td>
-          <td>
-            <select name="assigned_to">
-              <option value="">Unassigned</option>
-              <?php foreach($members as $m): ?>
-                <option value="<?= (int)$m['id'] ?>" <?= ((string)$t['assigned_to'] === (string)$m['id'])?'selected':'' ?>><?= htmlspecialchars($m['name']) ?></option>
-              <?php endforeach; ?>
-            </select>
-          </td>
-          <td>
-              <button class="btn btn-outline">Save</button>
-            </form>
-            <form method="post" onsubmit="return confirm('Delete task?')">
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-              <input type="hidden" name="action" value="delete">
-              <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
-              <button class="btn btn-outline">Delete</button>
-            </form>
-            <form method="post" style="margin-top:6px">
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-              <input type="hidden" name="action" value="clone">
-              <input type="hidden" name="id" value="<?= (int)$t['id'] ?>">
-              <input type="date" name="new_task_date" value="">
-              <button class="btn btn-outline">Clone</button>
-            </form>
-            <form method="post" style="margin-top:6px" onsubmit="return confirm('Bulk delete this task?')" action="#" onclick="event.preventDefault(); const f=document.getElementById('bulkForm'); const i=document.createElement('input'); i.type='hidden'; i.name='ids[]'; i.value='<?= (int)$t['id'] ?>'; f.appendChild(i); f.submit();">
-              <button class="btn btn-outline">Add to Bulk Delete</button>
-            </form>
-            <?php $aid = (int)$t['id']; $taskAssets = $assetsByTask[$aid] ?? []; ?>
-            <div style="margin-top:8px">
-              <strong>Assets</strong>
-              <ul>
-                <?php foreach($taskAssets as $a): ?>
-                  <li>
-                    <a href="<?= htmlspecialchars($a['url']) ?>" target="_blank"><?= htmlspecialchars($a['title']) ?></a>
-                    <form method="post" style="display:inline" onsubmit="return confirm('Delete asset?')">
-                      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                      <input type="hidden" name="action" value="delete_asset">
-                      <input type="hidden" name="asset_id" value="<?= (int)$a['id'] ?>">
-                      <button class="btn btn-outline">Delete</button>
-                    </form>
-                  </li>
-                <?php endforeach; ?>
-              </ul>
-              <form method="post" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-                <input type="hidden" name="action" value="add_asset">
-                <input type="hidden" name="task_id" value="<?= (int)$t['id'] ?>">
-                <input type="text" name="asset_title" placeholder="Title">
-                <input type="url" name="asset_url" placeholder="https://...">
-                <button class="btn btn-outline">Add Asset</button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
     <div style="margin-top:8px">
       <?php if ($page > 1): ?><a class="btn btn-outline" href="?page=<?= $page-1 ?>&amp;q=<?= urlencode($q) ?>&amp;from=<?= urlencode($from) ?>&amp;to=<?= urlencode($to) ?>">Prev</a><?php endif; ?>
       <?php if ($offset + $pageSize < $total): ?><a class="btn btn-outline" href="?page=<?= $page+1 ?>&amp;q=<?= urlencode($q) ?>&amp;from=<?= urlencode($from) ?>&amp;to=<?= urlencode($to) ?>">Next</a><?php endif; ?>
