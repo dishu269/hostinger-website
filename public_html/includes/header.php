@@ -32,20 +32,22 @@ $csrf = generate_csrf_token();
       <nav class="nav">
         <?php if ($user): ?>
           <?php if ($user['role'] === 'admin'): ?>
-            <a href="/admin/index.php">Admin</a>
+            <a href="/admin/index.php">Admin Dashboard</a>
+          <?php else: ?>
+            <a href="/user/dashboard.php">Dashboard</a>
+            <a href="/user/learning.php">Learning</a>
+            <a href="/user/tasks.php">Tasks</a>
+            <a href="/user/crm.php">CRM</a>
+            <a href="/user/resources.php">Resources</a>
+            <a href="/user/training.php">Training</a>
+            <a href="/user/achievements.php">Badges</a>
+            <a href="/user/leaderboard.php">Leaderboard</a>
           <?php endif; ?>
+
           <a href="/user/profile.php" style="display: inline-flex; align-items: center; gap: 8px;">
             <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
             <span>My Profile</span>
           </a>
-          <a href="/user/dashboard.php">Dashboard</a>
-          <a href="/user/learning.php">Learning</a>
-          <a href="/user/tasks.php">Tasks</a>
-          <a href="/user/crm.php">CRM</a>
-          <a href="/user/resources.php">Resources</a>
-          <a href="/user/training.php">Training</a>
-          <a href="/user/achievements.php">Badges</a>
-          <a href="/user/leaderboard.php">Leaderboard</a>
           <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
           <a class="btn btn-outline" href="/logout.php">Logout</a>
         <?php else: ?>
