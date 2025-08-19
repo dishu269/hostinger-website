@@ -1,0 +1,15 @@
+{
+    "name": "dishantparihar/asclepius-app",
+    "description": "Digital HQ and CRM for Asclepius Wellness Team",
+    "type": "project",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Dishant Parihar",
+            "email": "dishantparihar00@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0"
+    }
+}
