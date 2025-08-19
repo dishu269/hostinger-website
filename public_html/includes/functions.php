@@ -81,16 +81,57 @@ function get_notifications(PDO $pdo, int $userId): array
 }
 
 /**
- * Fetches the user's task funnel stats for the last 7 days.
+ * Fetches the user's daily task funnel stats for the last 7 days.
+ * Prepares data structured for charting.
  * @param PDO $pdo
  * @param int $userId
  * @return array
  */
-function get_weekly_funnel(PDO $pdo, int $userId): array
+function get_weekly_funnel_chart_data(PDO $pdo, int $userId): array
 {
-    $stmt = $pdo->prepare('SELECT COALESCE(SUM(attempts),0) AS attempts, COALESCE(SUM(successes),0) AS successes FROM user_task_logs WHERE user_id = ? AND log_date >= (CURRENT_DATE - INTERVAL 6 DAY)');
+    // 1. Initialize an array for the last 7 days with 0 values
+    $chart_data = [
+        'labels' => [],
+        'datasets' => [
+            ['label' => 'Attempts', 'data' => [], 'backgroundColor' => 'rgba(54, 162, 235, 0.5)'],
+            ['label' => 'Successes', 'data' => [], 'backgroundColor' => 'rgba(75, 192, 192, 0.5)'],
+        ],
+    ];
+    $seven_days_data = [];
+    for ($i = 6; $i >= 0; $i--) {
+        $date = (new DateTime())->modify("-$i day");
+        $date_key = $date->format('Y-m-d');
+        $chart_data['labels'][] = $date->format('D, M j'); // e.g., "Mon, Jan 1"
+        $seven_days_data[$date_key] = ['attempts' => 0, 'successes' => 0];
+    }
+
+    // 2. Fetch data from the DB for the last 7 days
+    $stmt = $pdo->prepare('
+        SELECT log_date, SUM(attempts) as attempts, SUM(successes) as successes
+        FROM user_task_logs
+        WHERE user_id = ? AND log_date >= (CURRENT_DATE - INTERVAL 6 DAY)
+        GROUP BY log_date
+        ORDER BY log_date ASC
+    ');
     $stmt->execute([$userId]);
-    return $stmt->fetch() ?: ['attempts' => 0, 'successes' => 0];
+    $db_results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 3. Fill in the data for days that have logs
+    foreach ($db_results as $row) {
+        $date_key = $row['log_date'];
+        if (isset($seven_days_data[$date_key])) {
+            $seven_days_data[$date_key]['attempts'] = (int)$row['attempts'];
+            $seven_days_data[$date_key]['successes'] = (int)$row['successes'];
+        }
+    }
+
+    // 4. Populate the final chart data array
+    foreach ($seven_days_data as $day_data) {
+        $chart_data['datasets'][0]['data'][] = $day_data['attempts'];
+        $chart_data['datasets'][1]['data'][] = $day_data['successes'];
+    }
+
+    return $chart_data;
 }
 
 /**

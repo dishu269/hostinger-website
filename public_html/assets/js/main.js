@@ -153,6 +153,35 @@
       update();
     });
   }
+
+  // Dashboard Chart
+  const weeklyActivityCanvas = document.getElementById('weeklyActivityChart');
+  if (weeklyActivityCanvas) {
+    const dataEl = document.getElementById('weeklyActivityData');
+    try {
+      const chartData = JSON.parse(dataEl.textContent);
+      new Chart(weeklyActivityCanvas, {
+        type: 'bar',
+        data: {
+          labels: chartData.labels,
+          datasets: chartData.datasets,
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+              }
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.error('Could not parse chart data', e);
+    }
+  }
 })();
 
 

@@ -13,7 +13,13 @@ $due = get_due_leads($pdo, $userId);
 $kpis = get_dashboard_kpis($pdo, $userId);
 $streakRow = get_user_streak($pdo, $userId);
 $notifications = get_notifications($pdo, $userId);
-$f = get_weekly_funnel($pdo, $userId);
+$weekly_chart_data = get_weekly_funnel_chart_data($pdo, $userId);
+
+// We still need the total funnel stats for the KPI card
+$f = [
+    'attempts' => array_sum($weekly_chart_data['datasets'][0]['data']),
+    'successes' => array_sum($weekly_chart_data['datasets'][1]['data']),
+];
 
 // Extract KPI values for use in the template
 $completedTasks = $kpis['completed_tasks'];
@@ -64,6 +70,14 @@ $completedModules = $kpis['completed_modules'];
   <div class="card kpi"><span>Tasks Complete</span><strong><?= $completedTasks ?></strong></div>
   <div class="card kpi"><span>Learning Progress</span><strong><?= $completedModules ?>/<?= $totalModules ?></strong></div>
   <div class="card kpi"><span>Streak</span><strong><?= (int)$streakRow['current_streak'] ?> din 🔥 (Best <?= (int)$streakRow['longest_streak'] ?>)</strong></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h3>Last 7 Days Activity</h3>
+  <canvas id="weeklyActivityChart"></canvas>
+  <script id="weeklyActivityData" type="application/json">
+    <?= json_encode($weekly_chart_data) ?>
+  </script>
 </div>
 
 <?php if ($notifications): ?>
