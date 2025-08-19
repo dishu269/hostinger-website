@@ -16,15 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $pdo->prepare('INSERT INTO events (title, description, event_date, location) VALUES (?,?,?,?)');
       $stmt->execute([$title, $description, $eventDate, $location]);
       set_flash('success', 'Event created.');
-    } elseif ($action === 'update') {
-      $id = (int)($_POST['id'] ?? 0);
-      $title = sanitize_string($_POST['title'] ?? '');
-      $description = sanitize_string($_POST['description'] ?? '');
-      $eventDate = $_POST['event_date'] ?? '';
-      $location = sanitize_string($_POST['location'] ?? '');
-      $stmt = $pdo->prepare('UPDATE events SET title=?, description=?, event_date=?, location=? WHERE id=?');
-      $stmt->execute([$title, $description, $eventDate, $location, $id]);
-      set_flash('success', 'Event updated.');
     } elseif ($action === 'delete') {
       $id = (int)($_POST['id'] ?? 0);
       $pdo->prepare('DELETE FROM events WHERE id = ?')->execute([$id]);
@@ -64,21 +55,17 @@ foreach (get_flashes() as $f) {
     <table>
       <thead><tr><th>Title</th><th>Date</th><th>Location</th><th>Actions</th></tr></thead>
       <tbody>
+        <?php if (empty($events)): ?>
+            <tr><td colspan="4" style="text-align: center;">No events created yet.</td></tr>
+        <?php endif; ?>
         <?php foreach($events as $e): ?>
         <tr>
-          <td>
-            <form method="post" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap">
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-              <input type="hidden" name="action" value="update">
-              <input type="hidden" name="id" value="<?= (int)$e['id'] ?>">
-              <input type="text" name="title" value="<?= htmlspecialchars($e['title']) ?>">
-          </td>
-          <td><input type="datetime-local" name="event_date" value="<?= htmlspecialchars(str_replace(' ', 'T', $e['event_date'])) ?>"></td>
-          <td><input type="text" name="location" value="<?= htmlspecialchars($e['location']) ?>"></td>
-          <td>
-              <button class="btn btn-outline">Save</button>
-            </form>
-            <form method="post" onsubmit="return confirm('Delete event?')">
+          <td><?= htmlspecialchars($e['title']) ?></td>
+          <td><?= htmlspecialchars($e['event_date']) ?></td>
+          <td><?= htmlspecialchars($e['location']) ?></td>
+          <td style="display:flex; gap: 6px;">
+            <a href="/admin/edit_event.php?id=<?= (int)$e['id'] ?>" class="btn btn-outline">Edit</a>
+            <form method="post" onsubmit="return confirm('Are you sure you want to delete this event?')">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= (int)$e['id'] ?>">
