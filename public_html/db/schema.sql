@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
   role ENUM('admin','member') NOT NULL DEFAULT 'member',
   city VARCHAR(120) NULL,
   phone VARCHAR(30) NULL,
+  avatar_url VARCHAR(255) NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_login DATETIME NULL,
   email_verified_at DATETIME NULL,

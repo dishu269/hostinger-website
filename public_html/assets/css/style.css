@@ -119,6 +119,11 @@ body {
   justify-content: space-between;
 }
 
+/* Spacing utility */
+.mt-3 {
+  margin-top: 12px;
+}
+
 label { display:block; margin: 10px 0 6px; font-weight: 600; }
 input, select, textarea {
   width: 100%;
@@ -187,6 +192,7 @@ th { background: var(--table-header-bg); }
   .hero { grid-template-columns: 1.1fr 0.9fr; }
   .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
   .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
   .hero h1 { font-size: 36px; }
 }
 

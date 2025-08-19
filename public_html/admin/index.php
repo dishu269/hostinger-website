@@ -16,25 +16,34 @@ $struggling = $pdo->query("SELECT name, COALESCE(DATEDIFF(NOW(), last_login), 99
 ?>
 
 <h2>Admin Dashboard</h2>
-<div class="grid cols-4" style="margin-top:12px">
+<div class="grid cols-4 mt-3">
   <div class="card kpi"><span>Members</span><strong><?= $numUsers ?></strong></div>
   <div class="card kpi"><span>Leads</span><strong><?= $numLeads ?></strong></div>
   <div class="card kpi"><span>Tasks</span><strong><?= $numTasks ?></strong></div>
   <div class="card kpi"><span>Modules</span><strong><?= $numModules ?></strong></div>
 </div>
 
-<div class="grid cols-3" style="margin-top:12px">
-  <a class="card" href="/admin/tasks.php"><strong>Manage Daily Tasks</strong><p>Create and schedule daily tasks.</p></a>
-  <a class="card" href="/admin/modules.php"><strong>Manage Learning Modules</strong><p>Videos, PDFs, articles.</p></a>
-  <a class="card" href="/admin/whatsapp_templates.php"><strong>WhatsApp Templates</strong><p>Persona-based messages for quick follow-ups.</p></a>
-  <a class="card" href="/admin/resources.php"><strong>Resources</strong><p>Brochures, scripts, social content.</p></a>
-  <a class="card" href="/admin/users.php"><strong>Team Members</strong><p>View and manage users.</p></a>
-  <a class="card" href="/admin/achievements.php"><strong>Achievements</strong><p>Badges and thresholds.</p></a>
-  <a class="card" href="/admin/events.php"><strong>Events</strong><p>Announce trainings and meets.</p></a>
-  <a class="card" href="/admin/messages.php"><strong>Broadcast</strong><p>Motivation and announcements.</p></a>
+<div class="mt-3">
+  <h3>Core Actions</h3>
+  <div class="grid cols-3 mt-3">
+    <a class="card" href="/admin/users.php"><strong>👥 Team Members</strong><p>View and manage users.</p></a>
+    <a class="card" href="/admin/tasks.php"><strong>📝 Manage Daily Tasks</strong><p>Create and schedule daily tasks.</p></a>
+    <a class="card" href="/admin/modules.php"><strong>🎓 Manage Learning Modules</strong><p>Videos, PDFs, articles.</p></a>
+  </div>
 </div>
 
-<div class="grid cols-2" style="margin-top:12px">
+<div class="mt-3">
+  <h3>Content & Engagement</h3>
+  <div class="grid cols-4 mt-3">
+    <a class="card" href="/admin/resources.php"><strong>📚 Resources</strong><p>Brochures, scripts, social content.</p></a>
+    <a class="card" href="/admin/whatsapp_templates.php"><strong>💬 WhatsApp Templates</strong><p>Persona-based messages for quick follow-ups.</p></a>
+    <a class="card" href="/admin/messages.php"><strong>📢 Broadcast</strong><p>Motivation and announcements.</p></a>
+    <a class="card" href="/admin/events.php"><strong>🗓️ Events</strong><p>Announce trainings and meets.</p></a>
+    <a class="card" href="/admin/achievements.php"><strong>🏆 Achievements</strong><p>Badges and thresholds.</p></a>
+  </div>
+</div>
+
+<div class="grid cols-2 mt-3">
   <div class="card">
     <h3>Top Performers (30d)</h3>
     <ul>

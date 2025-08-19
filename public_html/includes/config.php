@@ -11,10 +11,10 @@ const SITE_BRAND = 'Dishant Parihar Team';
 // Do not hardcode database credentials. Use environment variables.
 // In your hosting panel (e.g., Hostinger hPanel), set an environment variable
 // named DB_PASS with your actual database password.
-const DB_HOST = getenv('DB_HOST') ?: 'localhost';
-const DB_NAME = getenv('DB_NAME') ?: 'u782093275_app';
-const DB_USER = getenv('DB_USER') ?: 'u782093275_app';
-const DB_PASS = getenv('DB_PASS') ?: 'Vktmdp@2025'; // Fallback to empty string if not set
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_NAME', getenv('DB_NAME') ?: 'u782093275_app');
+define('DB_USER', getenv('DB_USER') ?: 'u782093275_app');
+define('DB_PASS', getenv('DB_PASS') ?: 'Vktmdp@2025'); // Fallback to empty string if not set
 const DB_CHARSET = 'utf8mb4';
 
 // Session settings
@@ -54,7 +54,7 @@ const ENABLE_VOICE_INPUT = true;
 // Cron security and email notifications
 // --- IMPORTANT SECURITY NOTICE ---
 // Set a strong, secret CRON_TOKEN as an environment variable in your hosting panel.
-const CRON_TOKEN = getenv('CRON_TOKEN') ?: 'your_default_fallback_token';
+define('CRON_TOKEN', getenv('CRON_TOKEN') ?: 'your_default_fallback_token');
 const ENABLE_EMAIL_REPORTS = false; // Set true to email daily admin reports
 
 // App URL and email sender

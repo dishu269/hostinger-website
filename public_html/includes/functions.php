@@ -39,12 +39,16 @@ function get_dashboard_kpis(PDO $pdo, int $userId): array
 {
     $stmt = $pdo->prepare("
       SELECT
-        (SELECT COUNT(*) FROM user_tasks WHERE user_id = :user_id) as completed_tasks,
+        (SELECT COUNT(*) FROM user_tasks WHERE user_id = :user_id_1) as completed_tasks,
         (SELECT COUNT(*) FROM learning_modules WHERE published = 1) as total_modules,
-        (SELECT COUNT(*) FROM module_progress WHERE user_id = :user_id AND progress_percent = 100) as completed_modules,
-        (SELECT COUNT(*) FROM leads WHERE user_id = :user_id) as lead_count
+        (SELECT COUNT(*) FROM module_progress WHERE user_id = :user_id_2 AND progress_percent = 100) as completed_modules,
+        (SELECT COUNT(*) FROM leads WHERE user_id = :user_id_3) as lead_count
     ");
-    $stmt->execute(['user_id' => $userId]);
+    $stmt->execute([
+        'user_id_1' => $userId,
+        'user_id_2' => $userId,
+        'user_id_3' => $userId,
+    ]);
     $kpis = $stmt->fetch(PDO::FETCH_ASSOC);
     return [
         'completed_tasks' => (int)($kpis['completed_tasks'] ?? 0),
