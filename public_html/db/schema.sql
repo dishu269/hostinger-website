@@ -14,8 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified_at DATETIME NULL,
   verification_token VARCHAR(64) NULL,
   verification_sent_at DATETIME NULL,
-  INDEX idx_users_verify_token (verification_token),
-  INDEX idx_users_last_login (last_login)
+  INDEX idx_users_verify_token (verification_token)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS leads (
@@ -35,9 +34,6 @@ CREATE TABLE IF NOT EXISTS leads (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_leads_user (user_id),
   INDEX idx_leads_followup (follow_up_date),
-  INDEX idx_leads_name (name),
-  INDEX idx_leads_interest (interest_level),
-  INDEX idx_leads_created (created_at),
   CONSTRAINT fk_leads_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -71,8 +67,6 @@ CREATE TABLE IF NOT EXISTS tasks (
   is_template TINYINT(1) NOT NULL DEFAULT 0,
   template_name VARCHAR(120) NULL,
   assigned_to INT NULL,
-  INDEX idx_tasks_assigned_to (assigned_to),
-  INDEX idx_tasks_date_daily (task_date, is_daily),
   CONSTRAINT fk_tasks_assigned_to FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -82,7 +76,6 @@ CREATE TABLE IF NOT EXISTS user_tasks (
   task_id INT NOT NULL,
   completed_at DATETIME NOT NULL,
   UNIQUE KEY uniq_user_task (user_id, task_id),
-  INDEX idx_user_tasks_completed (completed_at),
   CONSTRAINT fk_user_tasks_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_user_tasks_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -107,7 +100,6 @@ CREATE TABLE IF NOT EXISTS task_assets (
   task_id INT NOT NULL,
   title VARCHAR(200) NOT NULL,
   url VARCHAR(500) NOT NULL,
-  INDEX idx_task_assets_task (task_id),
   CONSTRAINT fk_task_assets_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -129,8 +121,7 @@ CREATE TABLE IF NOT EXISTS learning_modules (
   content_url VARCHAR(500) NULL,
   type ENUM('video','pdf','article') NOT NULL DEFAULT 'video',
   order_index INT NOT NULL DEFAULT 0,
-  published TINYINT(1) NOT NULL DEFAULT 1,
-  INDEX idx_lm_published_order (published, order_index)
+  published TINYINT(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS module_progress (
@@ -140,7 +131,6 @@ CREATE TABLE IF NOT EXISTS module_progress (
   progress_percent INT NOT NULL DEFAULT 0,
   completed_at DATETIME NULL,
   UNIQUE KEY uniq_user_module (user_id, module_id),
-  INDEX idx_mp_progress (progress_percent),
   CONSTRAINT fk_progress_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_progress_module FOREIGN KEY (module_id) REFERENCES learning_modules(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -160,7 +150,6 @@ CREATE TABLE IF NOT EXISTS posts (
   title VARCHAR(200) NOT NULL,
   body TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_posts_user (user_id),
   CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -170,8 +159,6 @@ CREATE TABLE IF NOT EXISTS comments (
   user_id INT NOT NULL,
   body TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_comments_post (post_id),
-  INDEX idx_comments_user (user_id),
   CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
   CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -183,8 +170,7 @@ CREATE TABLE IF NOT EXISTS achievements (
   description TEXT NULL,
   icon VARCHAR(16) NOT NULL DEFAULT '🏆',
   threshold_type ENUM('leads','tasks','modules','streak') NOT NULL,
-  threshold_value INT NOT NULL DEFAULT 1,
-  INDEX idx_ach_threshold_type (threshold_type)
+  threshold_value INT NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS user_achievements (
@@ -202,8 +188,7 @@ CREATE TABLE IF NOT EXISTS events (
   title VARCHAR(200) NOT NULL,
   description TEXT NULL,
   event_date DATETIME NULL,
-  location VARCHAR(200) NULL,
-  INDEX idx_events_date (event_date)
+  location VARCHAR(200) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS messages (
@@ -212,8 +197,7 @@ CREATE TABLE IF NOT EXISTS messages (
   body TEXT NOT NULL,
   message_type ENUM('motivation','announcement') NOT NULL DEFAULT 'motivation',
   active TINYINT(1) NOT NULL DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  INDEX idx_messages_active_type (active, message_type)
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Login attempts for rate limiting

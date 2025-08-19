@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
-require_once __DIR__ . '/../includes/functions.php'; // Include the new functions file
 require_member();
+require_once __DIR__ . '/../includes/functions.php'; // Include the new functions file
 
 $pdo = get_db();
 $userId = (int)$user['id'];
