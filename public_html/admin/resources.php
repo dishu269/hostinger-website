@@ -17,16 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $pdo->prepare('INSERT INTO resources (title, description, file_url, type, published) VALUES (?,?,?,?,?)');
       $stmt->execute([$title, $description, $fileUrl, $type, $published]);
       set_flash('success', 'Resource added.');
-    } elseif ($action === 'update') {
-      $id = (int)($_POST['id'] ?? 0);
-      $title = sanitize_string($_POST['title'] ?? '');
-      $description = sanitize_string($_POST['description'] ?? '');
-      $fileUrl = sanitize_string($_POST['file_url'] ?? '');
-      $type = sanitize_string($_POST['type'] ?? 'pdf');
-      $published = isset($_POST['published']) ? 1 : 0;
-      $stmt = $pdo->prepare('UPDATE resources SET title=?, description=?, file_url=?, type=?, published=? WHERE id=?');
-      $stmt->execute([$title, $description, $fileUrl, $type, $published, $id]);
-      set_flash('success', 'Resource updated.');
     } elseif ($action === 'delete') {
       $id = (int)($_POST['id'] ?? 0);
       $pdo->prepare('DELETE FROM resources WHERE id = ?')->execute([$id]);
@@ -72,31 +62,23 @@ foreach (get_flashes() as $f) {
     <h3>All Resources</h3>
     <p style="color:#6b7280">Tip: Manage WhatsApp templates under <a href="/admin/whatsapp_templates.php">WhatsApp Templates</a>.</p>
     <table>
-      <thead><tr><th>Title</th><th>Type</th><th>URL</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Title</th><th>Type</th><th>Published</th><th>Actions</th></tr></thead>
       <tbody>
+        <?php if (empty($resources)): ?>
+          <tr><td colspan="4" style="text-align: center;">No resources added yet.</td></tr>
+        <?php endif; ?>
         <?php foreach($resources as $r): ?>
         <tr>
           <td>
-            <form method="post" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap">
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-              <input type="hidden" name="action" value="update">
-              <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
-              <input type="text" name="title" value="<?= htmlspecialchars($r['title']) ?>">
+            <a href="<?= htmlspecialchars($r['file_url']) ?>" target="_blank" rel="noopener noreferrer">
+              <?= htmlspecialchars($r['title']) ?>
+            </a>
           </td>
-          <td>
-            <select name="type">
-              <option value="pdf" <?= $r['type']==='pdf'?'selected':'' ?>>PDF</option>
-              <option value="image" <?= $r['type']==='image'?'selected':'' ?>>Image</option>
-              <option value="video" <?= $r['type']==='video'?'selected':'' ?>>Video</option>
-              <option value="script" <?= $r['type']==='script'?'selected':'' ?>>Script</option>
-              <option value="social" <?= $r['type']==='social'?'selected':'' ?>>Social</option>
-            </select>
-          </td>
-          <td><input type="url" name="file_url" value="<?= htmlspecialchars($r['file_url']) ?>"></td>
-          <td>
-              <button class="btn btn-outline">Save</button>
-            </form>
-            <form method="post" onsubmit="return confirm('Delete resource?')">
+          <td><span class="badge"><?= htmlspecialchars(strtoupper($r['type'])) ?></span></td>
+          <td><?= (int)$r['published'] ? 'Yes' : 'No' ?></td>
+          <td style="display:flex; gap: 6px;">
+            <a href="/admin/edit_resource.php?id=<?= (int)$r['id'] ?>" class="btn btn-outline">Edit</a>
+            <form method="post" onsubmit="return confirm('Are you sure you want to delete this resource?')">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
