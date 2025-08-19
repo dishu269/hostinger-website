@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
-require_login();
+require_member();
 $pdo = get_db();
 
 $resources = $pdo->query('SELECT * FROM resources WHERE published = 1 ORDER BY id DESC')->fetchAll();

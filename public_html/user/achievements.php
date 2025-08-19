@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
-require_login();
+require_member();
 $pdo = get_db();
 
 $stmt = $pdo->prepare('SELECT a.id, a.icon, a.name, a.description, ua.awarded_at FROM achievements a LEFT JOIN user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = ? ORDER BY a.id ASC');

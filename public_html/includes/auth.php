@@ -79,6 +79,18 @@ function require_login(): void {
     }
 }
 
+function require_member(): void {
+    $user = current_user();
+    if (!$user) {
+        header('Location: /login.php');
+        exit;
+    }
+    if ($user['role'] === 'admin') {
+        header('Location: /admin/index.php');
+        exit;
+    }
+}
+
 function require_admin(): void {
     require_login();
     if (!is_admin()) {

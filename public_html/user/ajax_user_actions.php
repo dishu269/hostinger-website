@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/header.php';
-require_login();
+require_member();
 
 // --- User-facing AJAX Endpoint ---
 
