@@ -14,7 +14,7 @@ const SITE_BRAND = 'Dishant Parihar Team';
 const DB_HOST = getenv('DB_HOST') ?: 'localhost';
 const DB_NAME = getenv('DB_NAME') ?: 'u782093275_app';
 const DB_USER = getenv('DB_USER') ?: 'u782093275_app';
-const DB_PASS = getenv('DB_PASS') ?: ''; // Fallback to empty string if not set
+const DB_PASS = getenv('DB_PASS') ?: 'Vktmdp@2025'; // Fallback to empty string if not set
 const DB_CHARSET = 'utf8mb4';
 
 // Session settings
