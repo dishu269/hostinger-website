@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/header.php';
 require_member();
 require_once __DIR__ . '/../includes/functions.php'; // Include the new functions file
