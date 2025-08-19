@@ -8,93 +8,106 @@ $category = $_GET['category'] ?? 'leads';
 $timeframe = $_GET['timeframe'] ?? 'month';
 
 $allowed_categories = ['leads', 'tasks', 'modules'];
-if (!in_array($category, $allowed_categories, true)) {
+if (!in_array($category, $allowed_categories)) {
     $category = 'leads';
 }
 
 $allowed_timeframes = ['week', 'month', 'all'];
-if (!in_array($timeframe, $allowed_timeframes, true)) {
+if (!in_array($timeframe, $allowed_timeframes)) {
     $timeframe = 'month';
 }
 
 // --- Dynamic Query Building ---
-$score_column = '';
+$select_column = '';
 $table_join = '';
-$date_column = '';
+$where_clause = '';
 $score_column_name = 'Score';
 
 switch ($category) {
     case 'tasks':
-        $score_column = 'COUNT(ut.id)';
+        $select_column = 'COUNT(ut.id)';
         $table_join = 'LEFT JOIN user_tasks ut ON ut.user_id = u.id';
-        $date_column = 'ut.completed_at';
         $score_column_name = 'Tasks';
+        $date_column = 'ut.completed_at';
         break;
     case 'modules':
-        $score_column = 'COUNT(mp.id)';
+        $select_column = 'COUNT(mp.id)';
         $table_join = 'LEFT JOIN module_progress mp ON mp.user_id = u.id AND mp.progress_percent = 100';
-        $date_column = 'mp.completed_at';
         $score_column_name = 'Modules';
+        $date_column = 'mp.completed_at';
         break;
     case 'leads':
     default:
-        $score_column = 'COUNT(l.id)';
+        $select_column = 'COUNT(l.id)';
         $table_join = 'LEFT JOIN leads l ON l.user_id = u.id';
-        $date_column = 'l.created_at';
         $score_column_name = 'Leads';
+        $date_column = 'l.created_at';
         break;
 }
 
-$where_clause = '1=1'; // Default to true, simplifies appending AND
 $params = [];
-if ($timeframe === 'week') {
-    $where_clause .= " AND {$date_column} >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)";
-} elseif ($timeframe === 'month') {
-    $where_clause .= " AND {$date_column} >= DATE_FORMAT(CURDATE(), '%Y-%m-01')";
+switch ($timeframe) {
+    case 'week':
+        // Assumes MySQL. Starts from Monday.
+        $where_clause = "WHERE $date_column >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY)";
+        break;
+    case 'month':
+        $where_clause = "WHERE $date_column >= DATE_FORMAT(CURDATE(), '%Y-%m-01')";
+        break;
+    case 'all':
+    default:
+        $where_clause = '';
+        break;
 }
 
-// --- Optimized Query using Window Function (MySQL 8+) ---
 $sql = "
-    WITH ranked_users AS (
-        SELECT
-            u.id,
-            u.name,
-            u.avatar_url,
-            {$score_column} AS score,
-            RANK() OVER (ORDER BY {$score_column} DESC) as user_rank
-        FROM users u
-        {$table_join}
-        WHERE {$where_clause}
-        GROUP BY u.id, u.name, u.avatar_url
-    )
-    SELECT *
-    FROM ranked_users
-    WHERE user_rank <= 20 OR id = :user_id
-    ORDER BY user_rank ASC, name ASC
+    SELECT u.id, u.name, u.avatar_url, {$select_column} AS score
+    FROM users u
+    {$table_join}
+    {$where_clause}
+    GROUP BY u.id, u.name, u.avatar_url
+    ORDER BY score DESC, u.name ASC
+    LIMIT 20
 ";
 
-$params['user_id'] = $user['id'];
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
-$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$leaders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$leaders = [];
-$current_user_from_results = null;
-
-foreach ($results as $row) {
-    if ($row['user_rank'] <= 20) {
-        $leaders[] = $row;
+// --- Bonus: Get current user's rank ---
+$current_user_rank = null;
+if ($user) {
+    // Note: This is a simplified ranking query. For large datasets, a window function like RANK() is better.
+    // This subquery calculates the score for the current user.
+    $user_score_sql = "SELECT {$select_column} AS score FROM users u {$table_join} {$where_clause} AND u.id = ?";
+    $user_score_stmt = $pdo->prepare($user_score_sql);
+    $user_score_params = array_merge($params, [$user['id']]);
+    // The WHERE clause from the main query might be empty, so we need to adjust the SQL
+    if (strpos($user_score_sql, 'WHERE') === false) {
+        $user_score_sql = str_replace("AND u.id = ?", "WHERE u.id = ?", $user_score_sql);
     }
-    if ((int)$row['id'] === (int)$user['id']) {
-        $current_user_from_results = $row;
-    }
-}
+    $user_score_stmt = $pdo->prepare($user_score_sql);
+    $user_score_stmt->execute($user_score_params);
+    $user_score = (int)$user_score_stmt->fetchColumn();
 
-// In case the current user is not in the top 20, they are still fetched by the query
-$user_score = $current_user_from_results['score'] ?? 0;
-$current_user_rank = $current_user_from_results['user_rank'] ?? 0;
-if ($user_score === 0) {
-    $current_user_rank = 0; // Treat 0 score as unranked
+    // This subquery counts how many users have a better score.
+    $rank_sql = "
+        SELECT COUNT(*) + 1 FROM (
+            SELECT u.id, {$select_column} as score
+            FROM users u
+            {$table_join}
+            {$where_clause}
+            GROUP BY u.id
+            HAVING score > ?
+        ) as ranked_users
+    ";
+    $rank_stmt = $pdo->prepare($rank_sql);
+    $rank_params = array_merge($params, [$user_score]);
+    $rank_stmt->execute($rank_params);
+    $current_user_rank = (int)$rank_stmt->fetchColumn();
+    if ($user_score === 0) { // If user has 0 score, their rank is effectively last
+        $current_user_rank = 0;
+    }
 }
 ?>
 
