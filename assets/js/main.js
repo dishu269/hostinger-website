@@ -314,5 +314,3 @@
   // User-side forms
   handleAjaxForm('user-create-task-form', '/user/tasks.php');
 })();
-
-

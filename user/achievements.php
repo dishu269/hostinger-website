@@ -35,4 +35,3 @@ foreach ($all_achievements_raw as $a) {
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-
