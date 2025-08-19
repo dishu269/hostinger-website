@@ -84,15 +84,30 @@
   if (leadForm) {
     leadForm.addEventListener('submit', async (e) => {
       const form = e.currentTarget;
+      const submitButton = form.querySelector('button[type="submit"]');
+
+      // Provide immediate feedback
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving...';
+      }
+
       if (!navigator.onLine) {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(form).entries());
         const all = JSON.parse(localStorage.getItem(queueKey) || '[]');
         all.push(data);
         localStorage.setItem(queueKey, JSON.stringify(all));
+
         alert('Saved offline. Will sync when online.');
         form.reset();
+
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Save Lead';
+        }
       }
+      // For online submissions, the button will remain disabled until page reload
     });
   }
 

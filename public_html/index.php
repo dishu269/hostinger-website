@@ -40,10 +40,7 @@ $stats = [
       <p><?= htmlspecialchars($motivation['body'] ?? 'Small steps daily lead to massive results. Take action now.') ?></p>
     </div>
     <div style="margin-top:12px">
-      <video controls width="100%" poster="/assets/img/cover.jpg" preload="none" playsinline>
-        <source src="" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
+      <img src="/assets/img/cover.jpg" alt="Team motivation video placeholder" style="width:100%; border-radius: 12px;">
     </div>
   </div>
   </section>
