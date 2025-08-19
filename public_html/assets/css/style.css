@@ -237,7 +237,33 @@ body {
 .kpi {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+}
+.kpi-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.kpi-icon i.feather {
+  width: 20px;
+  height: 20px;
+}
+.kpi-text {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.kpi-text span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.kpi-text strong {
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 /* Spacing utilities */
@@ -383,4 +409,27 @@ body.dark-mode {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Quick Links */
+.quick-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  color: var(--text);
+}
+.quick-link:hover {
+  border-color: var(--gold);
+}
+.quick-link i.feather {
+  width: 24px;
+  height: 24px;
+  color: var(--blue);
+  flex-shrink: 0;
+}
+.quick-link p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }

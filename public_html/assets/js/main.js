@@ -7,6 +7,11 @@
       // Wait a moment for assets to render, then fade out
       setTimeout(() => loader.classList.add('hidden'), 200);
     }
+
+    // Feather Icons
+    if (typeof feather !== 'undefined') {
+      feather.replace();
+    }
   });
 
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -247,6 +252,15 @@
         },
         options: {
           responsive: true,
+          animation: {
+            delay: (context) => {
+              let delay = 0;
+              if (context.type === 'data' && context.mode === 'default') {
+                delay = context.dataIndex * 100 + context.datasetIndex * 100;
+              }
+              return delay;
+            },
+          },
           scales: {
             y: {
               beginAtZero: true,

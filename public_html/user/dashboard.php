@@ -93,21 +93,75 @@ $completedModules = $kpis['completed_modules'];
     <div class="card">
       <h3>Key Stats</h3>
       <div class="grid cols-1 mt-2">
-        <div class="card kpi"><span>Tasks Complete</span><strong><?= $completedTasks ?></strong></div>
-        <div class="card kpi"><span>Learning Progress</span><strong><?= $completedModules ?>/<?= $totalModules ?></strong></div>
-        <div class="card kpi"><span>Streak</span><strong><?= (int)$streakRow['current_streak'] ?> din 🔥 (Best <?= (int)$streakRow['longest_streak'] ?>)</strong></div>
-        <div class="card kpi"><span>7 Day Attempts</span><strong><?= (int)$f['attempts'] ?></strong></div>
-        <div class="card kpi"><span>7 Day Success</span><strong><?= (int)$f['successes'] ?></strong></div>
+        <div class="card kpi">
+          <div class="kpi-icon" style="background: #eefbf3;"><i style="color: #31c48d;" data-feather="check-square"></i></div>
+          <div class="kpi-text">
+            <span>Tasks Complete</span>
+            <strong><?= $completedTasks ?></strong>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-icon" style="background: #eefcff;"><i style="color: #31b3d9;" data-feather="book-open"></i></div>
+          <div class="kpi-text">
+            <span>Learning Progress</span>
+            <strong><?= $completedModules ?>/<?= $totalModules ?></strong>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-icon" style="background: #fdf2f2;"><i style="color: #f05252;" data-feather="trending-up"></i></div>
+          <div class="kpi-text">
+            <span>Streak</span>
+            <strong><?= (int)$streakRow['current_streak'] ?> din 🔥 (Best <?= (int)$streakRow['longest_streak'] ?>)</strong>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-icon" style="background: #f3f4f6;"><i style="color: #4b5563;" data-feather="bar-chart-2"></i></div>
+          <div class="kpi-text">
+            <span>7 Day Attempts</span>
+            <strong><?= (int)$f['attempts'] ?></strong>
+          </div>
+        </div>
+        <div class="card kpi">
+          <div class="kpi-icon" style="background: #fefce8;"><i style="color: #facc15;" data-feather="award"></i></div>
+          <div class="kpi-text">
+            <span>7 Day Success</span>
+            <strong><?= (int)$f['successes'] ?></strong>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="card">
       <h3>Quick Links</h3>
       <div class="grid cols-1 mt-2">
-        <a class="card" href="/user/learning.php"><strong>Learning Hub</strong><p>Modules complete karke skill badhao.</p></a>
-        <a class="card" href="/user/community.php"><strong>Community</strong><p>Questions poochho, help lo.</p></a>
-        <a class="card" href="/user/resources.php"><strong>Resources</strong><p>PDFs, scripts aur social content ready.</p></a>
-        <a class="card" href="/user/tasks.php?view=kanban"><strong>Kanban Board</strong><p>To‑do → Doing → Done drag & drop.</p></a>
+        <a class="card quick-link" href="/user/learning.php">
+          <i data-feather="book"></i>
+          <div>
+            <strong>Learning Hub</strong>
+            <p>Modules complete karke skill badhao.</p>
+          </div>
+        </a>
+        <a class="card quick-link" href="/user/community.php">
+          <i data-feather="users"></i>
+          <div>
+            <strong>Community</strong>
+            <p>Questions poochho, help lo.</p>
+          </div>
+        </a>
+        <a class="card quick-link" href="/user/resources.php">
+          <i data-feather="download-cloud"></i>
+          <div>
+            <strong>Resources</strong>
+            <p>PDFs, scripts aur social content ready.</p>
+          </div>
+        </a>
+        <a class="card quick-link" href="/user/tasks.php?view=kanban">
+          <i data-feather="trello"></i>
+          <div>
+            <strong>Kanban Board</strong>
+            <p>To‑do → Doing → Done drag & drop.</p>
+          </div>
+        </a>
       </div>
     </div>
 
