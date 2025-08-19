@@ -83,6 +83,29 @@ foreach ($logsStmt->fetchAll() as $r) { $logs[(int)$r['task_id']] = ['attempts'=
   </div>
 </div>
 
+<div class="card" style="margin-top:12px">
+  <h3>Add a Personal Task</h3>
+  <form id="user-create-task-form" method="post" action="/user/ajax_user_actions.php">
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
+    <input type="hidden" name="action" value="create_user_task">
+    <div class="grid cols-2">
+      <div>
+        <label for="title">Task Title</label>
+        <input type="text" id="title" name="title" required>
+      </div>
+      <div>
+        <label for="task_date">Date (optional)</label>
+        <input type="date" id="task_date" name="task_date">
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <label for="description">Description (optional)</label>
+      <textarea id="description" name="description" rows="2"></textarea>
+    </div>
+    <div style="margin-top:12px"><button class="btn" type="submit">Add Task</button></div>
+  </form>
+</div>
+
 <?php if ($view === 'calendar'): ?>
   <div class="card" style="margin-top:12px">
     <h3>Calendar (7 days)</h3>

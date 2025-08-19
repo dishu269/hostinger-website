@@ -310,6 +310,9 @@
   handleAjaxForm('edit-event-form', '/admin/events.php');
   handleAjaxForm('edit-message-form', '/admin/messages.php');
   handleAjaxForm('edit-achievement-form', '/admin/achievements.php');
+
+  // User-side forms
+  handleAjaxForm('user-create-task-form', '/user/tasks.php');
 })();
 
 
