@@ -161,6 +161,12 @@ th { background: var(--table-header-bg); }
 
 .site-footer { padding: 24px 0; color: var(--text-muted); }
 
+/* Achievement card states */
+.achievement-locked {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
 /* Animations */
 .fade-in { opacity: 0; transform: translateY(8px); animation: fadeIn .6s ease forwards; }
 @keyframes fadeIn { to { opacity: 1; transform: none; } }
