@@ -119,9 +119,15 @@ body {
   justify-content: space-between;
 }
 
-/* Spacing utility */
+/* Spacing utilities */
 .mt-3 {
   margin-top: 12px;
+}
+.mt-2 {
+  margin-top: 8px;
+}
+.ml-2 {
+  margin-left: 8px;
 }
 
 label { display:block; margin: 10px 0 6px; font-weight: 600; }
@@ -210,3 +216,15 @@ body.dark-mode {
   --table-header-bg: #4b5563;
 }
 
+/* Dashboard Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 2fr 1fr; /* 2/3 for main, 1/3 for sidebar */
+  }
+}
