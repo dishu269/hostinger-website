@@ -29,6 +29,20 @@
     });
   }
 
+  // --- Mobile Menu ---
+  const mobileMenuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  if (mobileMenuButton && mobileMenu) {
+    mobileMenuButton.addEventListener('click', () => {
+      const isActive = mobileMenuButton.classList.toggle('is-active');
+      mobileMenu.classList.toggle('is-active');
+      mobileMenuButton.setAttribute('aria-expanded', isActive);
+      // Prevent scrolling when menu is open
+      document.body.style.overflow = isActive ? 'hidden' : '';
+    });
+  }
+
   // Progressive enhancement: register service worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

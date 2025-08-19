@@ -32,33 +32,40 @@ $csrf = generate_csrf_token();
   <header class="site-header">
     <div class="container header-inner">
       <a href="/" class="brand"><?= SITE_BRAND ?></a>
-      <nav class="nav">
-        <?php if ($user): ?>
-          <?php if ($user['role'] === 'admin'): ?>
-            <a href="/admin/index.php">Admin Dashboard</a>
-          <?php else: ?>
-            <a href="/user/dashboard.php">Dashboard</a>
-            <a href="/user/learning.php">Learning</a>
-            <a href="/user/tasks.php">Tasks</a>
-            <a href="/user/crm.php">CRM</a>
-            <a href="/user/resources.php">Resources</a>
-            <a href="/user/training.php">Training</a>
-            <a href="/user/achievements.php">Badges</a>
-            <a href="/user/leaderboard.php">Leaderboard</a>
-          <?php endif; ?>
+      <button id="mobile-menu-button" class="mobile-menu-button" aria-label="Menu" aria-expanded="false">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+      </button>
+      <div id="mobile-menu" class="nav-wrapper">
+        <nav class="nav">
+          <?php if ($user): ?>
+            <?php if ($user['role'] === 'admin'): ?>
+              <a href="/admin/index.php">Admin Dashboard</a>
+            <?php else: ?>
+              <a href="/user/dashboard.php">Dashboard</a>
+              <a href="/user/learning.php">Learning</a>
+              <a href="/user/tasks.php">Tasks</a>
+              <a href="/user/crm.php">CRM</a>
+              <a href="/user/resources.php">Resources</a>
+              <a href="/user/training.php">Training</a>
+              <a href="/user/achievements.php">Badges</a>
+              <a href="/user/leaderboard.php">Leaderboard</a>
+            <?php endif; ?>
 
-          <a href="/user/profile.php" style="display: inline-flex; align-items: center; gap: 8px;">
-            <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
-            <span>My Profile</span>
-          </a>
-          <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
-          <a class="btn btn-outline" href="/logout.php">Logout</a>
-        <?php else: ?>
-          <a href="/login.php">Login</a>
-          <a class="btn" href="/register.php">Join</a>
-          <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
-        <?php endif; ?>
-      </nav>
+            <a href="/user/profile.php" style="display: inline-flex; align-items: center; gap: 8px;">
+              <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+              <span>My Profile</span>
+            </a>
+            <a class="btn btn-outline" href="/logout.php">Logout</a>
+            <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
+          <?php else: ?>
+            <a href="/login.php">Login</a>
+            <a class="btn" href="/register.php">Join</a>
+            <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
+          <?php endif; ?>
+        </nav>
+      </div>
     </div>
   </header>
   <main class="container">
