@@ -2,6 +2,24 @@
 (function () {
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+  // --- Theme Toggler ---
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    // Set initial icon
+    themeToggle.textContent = localStorage.getItem('theme') === 'dark' ? '☀️' : '🌙';
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      if (isDark) {
+        localStorage.setItem('theme', 'dark');
+        themeToggle.textContent = '☀️';
+      } else {
+        localStorage.setItem('theme', 'light');
+        themeToggle.textContent = '🌙';
+      }
+    });
+  }
+
   // Progressive enhancement: register service worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
