@@ -79,36 +79,62 @@
     return 'Listen actively, ask open questions, and connect needs to benefits. Offer a follow-up call.';
   };
 
-  // Lead form offline fallback
+  // Lead form AJAX and offline fallback
   const leadForm = document.querySelector('#lead-form');
   if (leadForm) {
     leadForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Always prevent default for AJAX/offline handling
       const form = e.currentTarget;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
       const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.textContent;
 
-      // Provide immediate feedback
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = 'Saving...';
+      submitButton.disabled = true;
+      submitButton.textContent = 'Saving...';
+
+      if (navigator.onLine) {
+        // Online: send via AJAX
+        try {
+          const response = await fetch('/user/lead_save.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': data.csrf_token,
+            },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+          if (result.ok) {
+            alert('Lead saved successfully!');
+            form.reset();
+            // Optionally, reload to see the new lead in the list
+            // location.reload();
+          } else {
+            alert('Error: ' + (result.error || 'Could not save lead.'));
+          }
+        } catch (error) {
+          alert('An network error occurred. Your lead has been saved offline instead.');
+          saveLeadOffline(data);
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
+      } else {
+        // Offline: save to localStorage
+        saveLeadOffline(data);
+        alert('Saved offline. Will sync when online.');
+        form.reset();
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
       }
+    });
 
-      if (!navigator.onLine) {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
+    function saveLeadOffline(data) {
         const all = JSON.parse(localStorage.getItem(queueKey) || '[]');
         all.push(data);
         localStorage.setItem(queueKey, JSON.stringify(all));
-
-        alert('Saved offline. Will sync when online.');
-        form.reset();
-
-        if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = 'Save Lead';
-        }
-      }
-      // For online submissions, the button will remain disabled until page reload
-    });
+    }
   }
 
   // Resend verification: works under CSP since this is external JS
