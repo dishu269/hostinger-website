@@ -3,29 +3,6 @@ require_once __DIR__ . '/../includes/header.php';
 require_admin();
 $pdo = get_db();
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
-        set_flash('error', 'Invalid CSRF token.');
-    } else {
-        $id = (int)($_POST['id'] ?? 0);
-        $title = sanitize_string($_POST['title'] ?? '');
-        $category = sanitize_string($_POST['category'] ?? '');
-        $description = sanitize_string($_POST['description'] ?? '');
-        $contentUrl = sanitize_string($_POST['content_url'] ?? '');
-        $type = sanitize_string($_POST['type'] ?? 'video');
-        $published = isset($_POST['published']) ? 1 : 0;
-        $orderIndex = (int)($_POST['order_index'] ?? 0);
-
-        $stmt = $pdo->prepare('UPDATE learning_modules SET title=?, category=?, description=?, content_url=?, type=?, order_index=?, published=? WHERE id = ?');
-        $stmt->execute([$title, $category, $description, $contentUrl, $type, $orderIndex, $published, $id]);
-
-        set_flash('success', 'Module updated successfully.');
-        header('Location: /admin/modules.php');
-        exit;
-    }
-}
-
 $module_id = (int)($_GET['id'] ?? 0);
 if ($module_id === 0) {
     set_flash('error', 'Invalid module ID.');
@@ -54,9 +31,9 @@ foreach (get_flashes() as $f) {
 <h2>Edit Module: <?= htmlspecialchars($module['title']) ?></h2>
 
 <div class="card" style="margin-top:12px">
-  <form method="post">
+  <form method="post" id="edit-module-form" action="/admin/ajax_admin_actions.php">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-    <input type="hidden" name="action" value="update">
+    <input type="hidden" name="action" value="edit_module">
     <input type="hidden" name="id" value="<?= (int)$module['id'] ?>">
 
     <div>

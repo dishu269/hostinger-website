@@ -3,24 +3,6 @@ require_once __DIR__ . '/../includes/header.php';
 require_admin();
 $pdo = get_db();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
-        set_flash('error', 'Invalid CSRF token.');
-    } else {
-        $id = (int)($_POST['id'] ?? 0);
-        $title = sanitize_string($_POST['title'] ?? '');
-        $description = sanitize_string($_POST['description'] ?? '');
-        $eventDate = $_POST['event_date'] ?? '';
-        $location = sanitize_string($_POST['location'] ?? '');
-
-        $stmt = $pdo->prepare('UPDATE events SET title=?, description=?, event_date=?, location=? WHERE id=?');
-        $stmt->execute([$title, $description, $eventDate, $location, $id]);
-        set_flash('success', 'Event updated.');
-        header('Location: /admin/events.php');
-        exit;
-    }
-}
-
 $event_id = (int)($_GET['id'] ?? 0);
 if ($event_id === 0) {
     set_flash('error', 'Invalid event ID.');
@@ -46,9 +28,9 @@ foreach (get_flashes() as $f) {
 
 <h2>Edit Event</h2>
 <div class="card" style="margin-top:12px">
-  <form method="post">
+  <form method="post" id="edit-event-form" action="/admin/ajax_admin_actions.php">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-    <input type="hidden" name="action" value="update">
+    <input type="hidden" name="action" value="edit_event">
     <input type="hidden" name="id" value="<?= (int)$event['id'] ?>">
 
     <label>Title</label>

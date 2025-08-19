@@ -100,9 +100,88 @@ if ($action === 'create_task') {
         echo json_encode(['success' => false, 'error' => 'Failed to update user.']);
     }
     exit;
+} elseif ($action === 'edit_module') {
+    $pdo = get_db();
+    $id = (int)($_POST['id'] ?? 0);
+    $title = sanitize_string($_POST['title'] ?? '');
+    $category = sanitize_string($_POST['category'] ?? '');
+    $description = sanitize_string($_POST['description'] ?? '');
+    $contentUrl = sanitize_string($_POST['content_url'] ?? '');
+    $type = sanitize_string($_POST['type'] ?? 'video');
+    $published = isset($_POST['published']) ? 1 : 0;
+    $orderIndex = (int)($_POST['order_index'] ?? 0);
+
+    $stmt = $pdo->prepare('UPDATE learning_modules SET title=?, category=?, description=?, content_url=?, type=?, order_index=?, published=? WHERE id = ?');
+    $success = $stmt->execute([$title, $category, $description, $contentUrl, $type, $orderIndex, $published, $id]);
+
+    if ($success) { echo json_encode(['success' => true, 'message' => 'Module updated.']); }
+    else { echo json_encode(['success' => false, 'error' => 'Failed to update module.']); }
+    exit;
+
+} elseif ($action === 'edit_resource') {
+    $pdo = get_db();
+    $id = (int)($_POST['id'] ?? 0);
+    $title = sanitize_string($_POST['title'] ?? '');
+    $description = sanitize_string($_POST['description'] ?? '');
+    $fileUrl = sanitize_string($_POST['file_url'] ?? '');
+    $type = sanitize_string($_POST['type'] ?? 'pdf');
+    $published = isset($_POST['published']) ? 1 : 0;
+
+    $stmt = $pdo->prepare('UPDATE resources SET title=?, description=?, file_url=?, type=?, published=? WHERE id=?');
+    $success = $stmt->execute([$title, $description, $fileUrl, $type, $published, $id]);
+
+    if ($success) { echo json_encode(['success' => true, 'message' => 'Resource updated.']); }
+    else { echo json_encode(['success' => false, 'error' => 'Failed to update resource.']); }
+    exit;
+
+} elseif ($action === 'edit_event') {
+    $pdo = get_db();
+    $id = (int)($_POST['id'] ?? 0);
+    $title = sanitize_string($_POST['title'] ?? '');
+    $description = sanitize_string($_POST['description'] ?? '');
+    $eventDate = $_POST['event_date'] ?? '';
+    $location = sanitize_string($_POST['location'] ?? '');
+
+    $stmt = $pdo->prepare('UPDATE events SET title=?, description=?, event_date=?, location=? WHERE id=?');
+    $success = $stmt->execute([$title, $description, $eventDate, $location, $id]);
+
+    if ($success) { echo json_encode(['success' => true, 'message' => 'Event updated.']); }
+    else { echo json_encode(['success' => false, 'error' => 'Failed to update event.']); }
+    exit;
+
+} elseif ($action === 'edit_message') {
+    $pdo = get_db();
+    $id = (int)($_POST['id'] ?? 0);
+    $title = sanitize_string($_POST['title'] ?? '');
+    $body = sanitize_string($_POST['body'] ?? '');
+    $type = sanitize_string($_POST['message_type'] ?? 'motivation');
+    $active = isset($_POST['active']) ? 1 : 0;
+
+    $stmt = $pdo->prepare('UPDATE messages SET title=?, body=?, message_type=?, active=? WHERE id=?');
+    $success = $stmt->execute([$title, $body, $type, $active, $id]);
+
+    if ($success) { echo json_encode(['success' => true, 'message' => 'Message updated.']); }
+    else { echo json_encode(['success' => false, 'error' => 'Failed to update message.']); }
+    exit;
+
+} elseif ($action === 'edit_achievement') {
+    $pdo = get_db();
+    $id = (int)($_POST['id'] ?? 0);
+    $name = sanitize_string($_POST['name'] ?? '');
+    $description = sanitize_string($_POST['description'] ?? '');
+    $icon = sanitize_string($_POST['icon'] ?? '🏆');
+    $thresholdType = sanitize_string($_POST['threshold_type'] ?? 'leads');
+    $thresholdValue = (int)($_POST['threshold_value'] ?? 0);
+
+    $stmt = $pdo->prepare('UPDATE achievements SET name=?, description=?, icon=?, threshold_type=?, threshold_value=? WHERE id=?');
+    $success = $stmt->execute([$name, $description, $icon, $thresholdType, $thresholdValue, $id]);
+
+    if ($success) { echo json_encode(['success' => true, 'message' => 'Achievement updated.']); }
+    else { echo json_encode(['success' => false, 'error' => 'Failed to update achievement.']); }
+    exit;
 }
 
-// Default response for unknown actions
+// Default response for any other action
 http_response_code(400); // Bad Request
-echo json_encode(['success' => false, 'error' => 'Unknown action.']);
+echo json_encode(['success' => false, 'error' => 'Unknown or unsupported action.']);
 exit;

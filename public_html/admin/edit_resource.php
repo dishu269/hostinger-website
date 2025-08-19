@@ -3,30 +3,6 @@ require_once __DIR__ . '/../includes/header.php';
 require_admin();
 $pdo = get_db();
 
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
-        set_flash('error', 'Invalid CSRF token.');
-    } else {
-        $id = (int)($_POST['id'] ?? 0);
-        $title = sanitize_string($_POST['title'] ?? '');
-        $description = sanitize_string($_POST['description'] ?? '');
-        $fileUrl = sanitize_string($_POST['file_url'] ?? '');
-        $type = sanitize_string($_POST['type'] ?? 'pdf');
-        $published = isset($_POST['published']) ? 1 : 0;
-
-        if (empty($title)) {
-            set_flash('error', 'Title is required.');
-        } else {
-            $stmt = $pdo->prepare('UPDATE resources SET title=?, description=?, file_url=?, type=?, published=? WHERE id=?');
-            $stmt->execute([$title, $description, $fileUrl, $type, $published, $id]);
-            set_flash('success', 'Resource updated successfully.');
-            header('Location: /admin/resources.php');
-            exit;
-        }
-    }
-}
-
 $resource_id = (int)($_GET['id'] ?? 0);
 if ($resource_id === 0) {
     set_flash('error', 'Invalid resource ID.');
@@ -55,9 +31,9 @@ foreach (get_flashes() as $f) {
 <h2>Edit Resource: <?= htmlspecialchars($resource['title']) ?></h2>
 
 <div class="card" style="margin-top:12px">
-  <form method="post">
+  <form method="post" id="edit-resource-form" action="/admin/ajax_admin_actions.php">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-    <input type="hidden" name="action" value="update">
+    <input type="hidden" name="action" value="edit_resource">
     <input type="hidden" name="id" value="<?= (int)$resource['id'] ?>">
 
     <div>

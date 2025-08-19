@@ -53,6 +53,7 @@ To set up the project locally, follow these steps:
 4.  **Configure your web server:**
     -   Point your web server's document root to the `public_html/` directory. This is important for security, as it prevents direct web access to files outside of the public directory.
     -   Ensure `mod_rewrite` (or your server's equivalent) is enabled to handle URL rewriting from the `.htaccess` file.
+    -   **Important**: Make sure the `public_html/uploads/` directory is writable by the web server so that profile pictures can be uploaded.
 
 5.  **Admin User:**
     -   The first user who registers with the email address `dishantparihar00@gmail.com` will be automatically assigned the `admin` role. You can change this default admin email in `public_html/includes/config.php`.

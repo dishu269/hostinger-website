@@ -287,6 +287,11 @@
   }
 
   handleAjaxForm('edit-user-form', '/admin/users.php');
+  handleAjaxForm('edit-module-form', '/admin/modules.php');
+  handleAjaxForm('edit-resource-form', '/admin/resources.php');
+  handleAjaxForm('edit-event-form', '/admin/events.php');
+  handleAjaxForm('edit-message-form', '/admin/messages.php');
+  handleAjaxForm('edit-achievement-form', '/admin/achievements.php');
 })();
 
 

@@ -41,6 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         unlink(__DIR__ . '/../' . $old_avatar_path);
                     }
 
+                    // Ensure the upload directory exists
+                    $upload_dir = __DIR__ . '/../uploads/avatars/';
+                    if (!is_dir($upload_dir)) {
+                        mkdir($upload_dir, 0755, true);
+                    }
+
                     // Move the new file and update DB
                     if (move_uploaded_file($file['tmp_name'], $upload_path)) {
                         $db_path = '/uploads/avatars/' . $new_filename;

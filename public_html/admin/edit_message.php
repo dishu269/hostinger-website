@@ -3,24 +3,6 @@ require_once __DIR__ . '/../includes/header.php';
 require_admin();
 $pdo = get_db();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
-        set_flash('error', 'Invalid CSRF token.');
-    } else {
-        $id = (int)($_POST['id'] ?? 0);
-        $title = sanitize_string($_POST['title'] ?? '');
-        $body = sanitize_string($_POST['body'] ?? '');
-        $type = sanitize_string($_POST['message_type'] ?? 'motivation');
-        $active = isset($_POST['active']) ? 1 : 0;
-
-        $stmt = $pdo->prepare('UPDATE messages SET title=?, body=?, message_type=?, active=? WHERE id=?');
-        $stmt->execute([$title, $body, $type, $active, $id]);
-        set_flash('success', 'Message updated.');
-        header('Location: /admin/messages.php');
-        exit;
-    }
-}
-
 $message_id = (int)($_GET['id'] ?? 0);
 if ($message_id === 0) {
     set_flash('error', 'Invalid message ID.');
@@ -46,9 +28,9 @@ foreach (get_flashes() as $f) {
 
 <h2>Edit Message</h2>
 <div class="card" style="margin-top:12px">
-  <form method="post">
+  <form method="post" id="edit-message-form" action="/admin/ajax_admin_actions.php">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-    <input type="hidden" name="action" value="update">
+    <input type="hidden" name="action" value="edit_message">
     <input type="hidden" name="id" value="<?= (int)$message['id'] ?>">
 
     <label>Title</label>
