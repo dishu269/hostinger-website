@@ -26,6 +26,9 @@ $csrf = generate_csrf_token();
   </script>
 </head>
 <body>
+  <div id="loader" class="loader">
+    <div class="spinner"></div>
+  </div>
   <header class="site-header">
     <div class="container header-inner">
       <a href="/" class="brand"><?= SITE_BRAND ?></a>

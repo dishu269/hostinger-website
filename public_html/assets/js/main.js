@@ -1,5 +1,14 @@
 // Main JS for Asclepius Wellness App
 (function () {
+  // --- Page Loader ---
+  window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    if (loader) {
+      // Wait a moment for assets to render, then fade out
+      setTimeout(() => loader.classList.add('hidden'), 200);
+    }
+  });
+
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
   // --- Theme Toggler ---
@@ -30,10 +39,22 @@
   // Intersection fade-ins
   const observer = new IntersectionObserver((entries) => {
     for (const entry of entries) {
-      if (entry.isIntersecting) entry.target.classList.add('fade-in');
+      if (entry.isIntersecting) {
+        entry.target.classList.add('fade-in');
+        // Optional: unobserve after animating
+        // observer.unobserve(entry.target);
+      }
     }
-  }, { threshold: 0.2 });
-  document.querySelectorAll('.card, .kpi, .motivation').forEach((el) => observer.observe(el));
+  }, { threshold: 0.1 }); // Lowered threshold to trigger sooner
+
+  document.querySelectorAll('.card, .kpi, .motivation').forEach((el, index) => {
+    // Add a staggered delay, but only for elements that aren't already visible
+    const rect = el.getBoundingClientRect();
+    if (rect.top > window.innerHeight) {
+      el.style.animationDelay = `${index * 50}ms`;
+    }
+    observer.observe(el);
+  });
 
   // Voice input helper for fields with [data-voice]
   function attachVoice(el) {
