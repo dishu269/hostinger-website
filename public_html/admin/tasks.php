@@ -9,44 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     set_flash('error', 'Invalid CSRF token.');
   } else {
     $action = $_POST['action'] ?? '';
-    if ($action === 'create') {
-      $title = sanitize_text($_POST['title'] ?? '', 200);
-      $description = sanitize_text($_POST['description'] ?? '', 1000);
-      $taskDate = $_POST['task_date'] ?: null;
-      $isDaily = isset($_POST['is_daily']) ? 1 : 0;
-      $type = in_array(($_POST['type'] ?? 'custom'), ['prospecting','followup','training','event','custom'], true) ? $_POST['type'] : 'custom';
-      $target = sanitize_int($_POST['target_count'] ?? 0, 0, 100000);
-      $impact = sanitize_int($_POST['impact_score'] ?? 1, 1, 5);
-      $effort = sanitize_int($_POST['effort_score'] ?? 1, 1, 5);
-      $priority = in_array(($_POST['priority'] ?? 'medium'), ['low','medium','high'], true) ? $_POST['priority'] : 'medium';
-      $dueTime = $_POST['due_time'] ?: null;
-      $repeatRule = in_array(($_POST['repeat_rule'] ?? 'none'), ['none','daily','weekly'], true) ? $_POST['repeat_rule'] : 'none';
-      $scriptA = sanitize_text($_POST['script_a'] ?? '', 5000);
-      $scriptB = sanitize_text($_POST['script_b'] ?? '', 5000);
-      $isTemplate = isset($_POST['is_template']) ? 1 : 0;
-      $templateName = $isTemplate ? sanitize_text($_POST['template_name'] ?? '', 120) : null;
-      $assignedTo = ($_POST['assigned_to'] ?? '') !== '' ? (int)$_POST['assigned_to'] : null;
-      if (mb_strlen($title) < 3) {
-        set_flash('error', 'Title must be at least 3 characters.');
-      } else {
-        // Optional duplicate guard for dated tasks (same date + same title)
-        if ($taskDate) {
-          $dup = $pdo->prepare('SELECT id FROM tasks WHERE task_date = ? AND title = ? LIMIT 1');
-          $dup->execute([$taskDate, $title]);
-          if ($dup->fetch()) {
-            set_flash('error', 'A task with same title already exists for this date.');
-          } else {
-            $stmt = $pdo->prepare('INSERT INTO tasks (title, description, task_date, is_daily, type, target_count, impact_score, effort_score, priority, due_time, repeat_rule, script_a, script_b, is_template, template_name, assigned_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-            $stmt->execute([$title, $description, $taskDate, $isDaily, $type, $target, $impact, $effort, $priority, $dueTime, $repeatRule, $scriptA, $scriptB, $isTemplate, $templateName, $assignedTo]);
-            set_flash('success', 'Task created.');
-          }
-        } else {
-          $stmt = $pdo->prepare('INSERT INTO tasks (title, description, task_date, is_daily, type, target_count, impact_score, effort_score, priority, due_time, repeat_rule, script_a, script_b, is_template, template_name, assigned_to) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-          $stmt->execute([$title, $description, $taskDate, $isDaily, $type, $target, $impact, $effort, $priority, $dueTime, $repeatRule, $scriptA, $scriptB, $isTemplate, $templateName, $assignedTo]);
-          set_flash('success', 'Task created.');
-        }
-      }
-    } elseif ($action === 'delete') {
+    if ($action === 'delete') {
       $id = (int)($_POST['id'] ?? 0);
       $pdo->prepare('DELETE FROM tasks WHERE id = ?')->execute([$id]);
       set_flash('success', 'Task deleted.');
@@ -148,9 +111,9 @@ foreach (get_flashes() as $f) {
 <div class="grid cols-2" style="margin-top:12px">
   <div class="card">
     <h3>Create Task</h3>
-    <form method="post">
+    <form method="post" id="create-task-form" action="/admin/task_actions.php">
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-      <input type="hidden" name="action" value="create">
+      <input type="hidden" name="action" value="create_task">
       <label>Title</label>
       <input type="text" name="title" required>
       <label>Description</label>
