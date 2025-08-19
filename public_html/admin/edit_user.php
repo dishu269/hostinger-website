@@ -4,28 +4,6 @@ require_admin();
 $pdo = get_db();
 
 $user_id = (int)($_GET['id'] ?? 0);
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
-        set_flash('error', 'Invalid CSRF token.');
-    } else {
-        $name = trim($_POST['name'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $city = trim($_POST['city'] ?? '');
-        $phone = trim($_POST['phone'] ?? '');
-
-        if (empty($name) || empty($email)) {
-            set_flash('error', 'Name and Email are required.');
-        } else {
-            $stmt = $pdo->prepare('UPDATE users SET name = ?, email = ?, city = ?, phone = ? WHERE id = ?');
-            $stmt->execute([$name, $email, $city, $phone, $user_id]);
-            set_flash('success', 'User updated successfully.');
-            header('Location: /admin/users.php');
-            exit;
-        }
-    }
-}
 if ($user_id === 0) {
     set_flash('error', 'Invalid user ID.');
     header('Location: /admin/users.php');
@@ -53,9 +31,10 @@ foreach (get_flashes() as $f) {
 <h2>Edit User: <?= htmlspecialchars($edit_user['name']) ?></h2>
 
 <div class="card" style="margin-top:12px">
-  <form method="post">
+  <form method="post" id="edit-user-form" action="/admin/ajax_admin_actions.php">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-    <input type="hidden" name="action" value="update_user">
+    <input type="hidden" name="action" value="edit_user">
+    <input type="hidden" name="id" value="<?= (int)$edit_user['id'] ?>">
 
     <div>
       <label for="name">Name</label>

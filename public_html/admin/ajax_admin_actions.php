@@ -71,6 +71,35 @@ if ($action === 'create_task') {
         echo json_encode(['success' => false, 'error' => 'Failed to save task to the database.']);
     }
     exit;
+} elseif ($action === 'edit_user') {
+    $pdo = get_db();
+
+    $id = (int)($_POST['id'] ?? 0);
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $city = trim($_POST['city'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+
+    if (empty($name) || empty($email)) {
+        echo json_encode(['success' => false, 'error' => 'Name and Email are required.']);
+        exit;
+    }
+
+    if ($id === 0) {
+        echo json_encode(['success' => false, 'error' => 'Invalid User ID.']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare('UPDATE users SET name = ?, email = ?, city = ?, phone = ? WHERE id = ?');
+    $success = $stmt->execute([$name, $email, $city, $phone, $id]);
+
+    if ($success) {
+        echo json_encode(['success' => true, 'message' => 'User updated successfully.']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Failed to update user.']);
+    }
+    exit;
 }
 
 // Default response for unknown actions

@@ -111,7 +111,7 @@ foreach (get_flashes() as $f) {
 <div class="grid cols-2" style="margin-top:12px">
   <div class="card">
     <h3>Create Task</h3>
-    <form method="post" id="create-task-form" action="/admin/task_actions.php">
+    <form method="post" id="create-task-form" action="/admin/ajax_admin_actions.php">
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
       <input type="hidden" name="action" value="create_task">
       <label>Title</label>

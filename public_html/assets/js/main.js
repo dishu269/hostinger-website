@@ -247,6 +247,46 @@
       });
     });
   }
+
+  // Generic AJAX form handler for simple "save and redirect" forms
+  function handleAjaxForm(formId, redirectUrl) {
+    const form = document.getElementById(formId);
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving...';
+
+        fetch(form.action, {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': formData.get('csrf_token') },
+          body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message || data.error);
+          if (data.success && redirectUrl) {
+            window.location.href = redirectUrl;
+          } else {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An unexpected error occurred. Please try again.');
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        });
+      });
+    }
+  }
+
+  handleAjaxForm('edit-user-form', '/admin/users.php');
 })();
 
 
