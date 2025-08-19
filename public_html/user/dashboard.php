@@ -1,40 +1,30 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/functions.php'; // Include the new functions file
 require_login();
+
 $pdo = get_db();
+$userId = (int)$user['id'];
 
-// Aaj ka task (today or daily)
-$today = (new DateTime('today'))->format('Y-m-d');
-$stmt = $pdo->prepare('SELECT * FROM tasks WHERE task_date = ? OR is_daily = 1 ORDER BY task_date DESC LIMIT 1');
-$stmt->execute([$today]);
-$todayTask = $stmt->fetch();
+// Fetch all dashboard data using the new functions
+$todayTask = get_today_task($pdo);
+$motivation = get_motivation_message($pdo);
+$due = get_due_leads($pdo, $userId);
+$kpis = get_dashboard_kpis($pdo, $userId);
+$streakRow = get_user_streak($pdo, $userId);
+$notifications = get_notifications($pdo, $userId);
+$weekly_chart_data = get_weekly_funnel_chart_data($pdo, $userId);
 
-$motivation = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1")->fetch();
+// We still need the total funnel stats for the KPI card
+$f = [
+    'attempts' => array_sum($weekly_chart_data['datasets'][0]['data']),
+    'successes' => array_sum($weekly_chart_data['datasets'][1]['data']),
+];
 
-// Follow-ups due
-$dueLeads = $pdo->prepare('SELECT id, name, mobile, interest_level, follow_up_date FROM leads WHERE user_id = ? AND follow_up_date IS NOT NULL AND follow_up_date <= ? ORDER BY follow_up_date ASC LIMIT 5');
-$dueLeads->execute([$user['id'], $today]);
-$due = $dueLeads->fetchAll();
-
-// Progress & KPIs
-$completedTasks = (int)$pdo->query('SELECT COUNT(*) FROM user_tasks WHERE user_id = ' . (int)$user['id'])->fetchColumn();
-$totalModules = (int)$pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1')->fetchColumn();
-$completedModules = (int)$pdo->query('SELECT COUNT(*) FROM module_progress WHERE user_id = ' . (int)$user['id'] . ' AND progress_percent = 100')->fetchColumn();
-$streak = $pdo->prepare('SELECT current_streak, longest_streak FROM user_streaks WHERE user_id = ?');
-$streak->execute([$user['id']]);
-$streakRow = $streak->fetch() ?: ['current_streak' => 0, 'longest_streak' => 0];
-$leadCount = (int)$pdo->prepare('SELECT COUNT(*) FROM leads WHERE user_id = ?')->execute([$user['id']]) ?: 0;
-$leadCount = (int)$pdo->query('SELECT COUNT(*) FROM leads WHERE user_id = ' . (int)$user['id'])->fetchColumn();
-
-// Notifications (latest 3)
-$notif = $pdo->prepare('SELECT title, body, created_at FROM notifications WHERE user_id = ? OR user_id IS NULL ORDER BY id DESC LIMIT 3');
-$notif->execute([$user['id']]);
-$notifications = $notif->fetchAll();
-
-// Weekly funnel (last 7 days)
-$funnel = $pdo->prepare('SELECT COALESCE(SUM(attempts),0) AS attempts, COALESCE(SUM(successes),0) AS successes FROM user_task_logs WHERE user_id = ? AND log_date >= (CURRENT_DATE - INTERVAL 6 DAY)');
-$funnel->execute([$user['id']]);
-$f = $funnel->fetch() ?: ['attempts'=>0,'successes'=>0];
+// Extract KPI values for use in the template
+$completedTasks = $kpis['completed_tasks'];
+$totalModules = $kpis['total_modules'];
+$completedModules = $kpis['completed_modules'];
 ?>
 
 <h2>Namaste <?= htmlspecialchars($user['name']) ?> 👋</h2>
@@ -80,6 +70,14 @@ $f = $funnel->fetch() ?: ['attempts'=>0,'successes'=>0];
   <div class="card kpi"><span>Tasks Complete</span><strong><?= $completedTasks ?></strong></div>
   <div class="card kpi"><span>Learning Progress</span><strong><?= $completedModules ?>/<?= $totalModules ?></strong></div>
   <div class="card kpi"><span>Streak</span><strong><?= (int)$streakRow['current_streak'] ?> din 🔥 (Best <?= (int)$streakRow['longest_streak'] ?>)</strong></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+  <h3>Last 7 Days Activity</h3>
+  <canvas id="weeklyActivityChart"></canvas>
+  <script id="weeklyActivityData" type="application/json">
+    <?= json_encode($weekly_chart_data) ?>
+  </script>
 </div>
 
 <?php if ($notifications): ?>

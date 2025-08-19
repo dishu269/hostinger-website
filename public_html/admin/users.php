@@ -36,7 +36,7 @@ foreach (get_flashes() as $f) {
 <h2>Team Members</h2>
 <div class="card" style="margin-top:12px">
   <table>
-    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Last Login</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Last Login</th><th>Actions</th></tr></thead>
     <tbody>
       <?php foreach($users as $u): ?>
       <tr>
@@ -47,17 +47,17 @@ foreach (get_flashes() as $f) {
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
             <input type="hidden" name="action" value="role">
             <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
-            <select name="role">
+            <select name="role" onchange="this.form.submit()">
               <option value="member" <?= $u['role']==='member'?'selected':'' ?>>Member</option>
               <option value="admin" <?= $u['role']==='admin'?'selected':'' ?>>Admin</option>
             </select>
-            <button class="btn btn-outline">Update</button>
           </form>
         </td>
         <td><?= htmlspecialchars($u['created_at'] ?? '-') ?></td>
         <td><?= htmlspecialchars($u['last_login'] ?? '-') ?></td>
-        <td>
-          <form method="post" onsubmit="return confirm('Delete user?')">
+        <td style="display:flex; gap: 6px;">
+          <a href="/admin/edit_user.php?id=<?= (int)$u['id'] ?>" class="btn btn-outline">Edit</a>
+          <form method="post" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.')">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
             <input type="hidden" name="action" value="delete">
             <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">

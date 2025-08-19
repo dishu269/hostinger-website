@@ -64,16 +64,21 @@ foreach (get_flashes() as $f) {
   <div class="card">
     <h3>All Achievements</h3>
     <table>
-      <thead><tr><th>Icon</th><th>Name</th><th>Type</th><th>Value</th><th></th></tr></thead>
+      <thead><tr><th>Icon</th><th>Name</th><th>Code</th><th>Type</th><th>Value</th><th>Actions</th></tr></thead>
       <tbody>
+        <?php if (empty($achievements)): ?>
+            <tr><td colspan="6" style="text-align: center;">No achievements created yet.</td></tr>
+        <?php endif; ?>
         <?php foreach($achievements as $a): ?>
         <tr>
           <td><?= htmlspecialchars($a['icon']) ?></td>
           <td><?= htmlspecialchars($a['name']) ?></td>
+          <td><code><?= htmlspecialchars($a['code']) ?></code></td>
           <td><?= htmlspecialchars($a['threshold_type']) ?></td>
           <td><?= (int)$a['threshold_value'] ?></td>
-          <td>
-            <form method="post" onsubmit="return confirm('Delete achievement?')">
+          <td style="display:flex; gap: 6px;">
+            <a href="/admin/edit_achievement.php?id=<?= (int)$a['id'] ?>" class="btn btn-outline">Edit</a>
+            <form method="post" onsubmit="return confirm('Are you sure you want to delete this achievement?')">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= (int)$a['id'] ?>">

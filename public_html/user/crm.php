@@ -8,33 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
     set_flash('error', 'Invalid CSRF token.');
   } else {
-    $action = $_POST['action'] ?? 'create';
-    if ($action === 'create') {
-      $name = sanitize_text($_POST['name'] ?? '', 200);
-      $mobile = preg_replace('/[^0-9+]/', '', (string)($_POST['mobile'] ?? ''));
-      if ($name === '' || $mobile === '') {
-        set_flash('error', 'Name and mobile are required.');
-      } else {
-        // Duplicate guard
-        $dup = $pdo->prepare('SELECT id FROM leads WHERE user_id = ? AND mobile = ? LIMIT 1');
-        $dup->execute([$user['id'], $mobile]);
-        if ($dup->fetch()) {
-          set_flash('success', 'Lead already exists.');
-        } else {
-          $stmt = $pdo->prepare('INSERT INTO leads (user_id, name, mobile, city, work, age, meeting_date, interest_level, notes, follow_up_date, created_at, updated_at, status) VALUES (?,?,?,?,?,?,?,?,?,?, NOW(), NOW(), ?)');
-          $meetingDate = $_POST['meeting_date'] ?: null;
-          $followDate = $_POST['follow_up_date'] ?: null;
-          $interest = in_array(($_POST['interest_level'] ?? 'Warm'), ['Hot','Warm','Cold'], true) ? $_POST['interest_level'] : 'Warm';
-          $persona = sanitize_text($_POST['persona'] ?? '');
-          $status = 'open';
-          $stmt->execute([
-            $user['id'], $name, $mobile, sanitize_text($_POST['city'] ?? '', 120), sanitize_text($_POST['work'] ?? '', 120), sanitize_int($_POST['age'] ?? 0, 10, 100), $meetingDate, $interest, sanitize_text($_POST['notes'] ?? '', 1000), $followDate, $status
-          ]);
-          award_achievements_for_user((int)$user['id']);
-          set_flash('success', 'Lead saved. Tip: ' . guidance_tip_for_interest($interest, $persona));
-        }
-      }
-    } elseif ($action === 'update') {
+    $action = $_POST['action'] ?? '';
+    if ($action === 'update') {
       $id = (int)($_POST['id'] ?? 0);
       $stmt = $pdo->prepare('UPDATE leads SET name = ?, mobile = ?, city = ?, work = ?, age = ?, meeting_date = ?, interest_level = ?, notes = ?, follow_up_date = ?, updated_at = NOW() WHERE id = ? AND user_id = ?');
       $stmt->execute([

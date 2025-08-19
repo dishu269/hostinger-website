@@ -15,6 +15,15 @@ $csrf = generate_csrf_token();
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/assets/css/style.css">
+  <script>
+    // Theme switcher to prevent FOUC
+    (function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -25,6 +34,10 @@ $csrf = generate_csrf_token();
           <?php if ($user['role'] === 'admin'): ?>
             <a href="/admin/index.php">Admin</a>
           <?php endif; ?>
+          <a href="/user/profile.php" style="display: inline-flex; align-items: center; gap: 8px;">
+            <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+            <span>My Profile</span>
+          </a>
           <a href="/user/dashboard.php">Dashboard</a>
           <a href="/user/learning.php">Learning</a>
           <a href="/user/tasks.php">Tasks</a>
@@ -33,10 +46,12 @@ $csrf = generate_csrf_token();
           <a href="/user/training.php">Training</a>
           <a href="/user/achievements.php">Badges</a>
           <a href="/user/leaderboard.php">Leaderboard</a>
+          <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
           <a class="btn btn-outline" href="/logout.php">Logout</a>
         <?php else: ?>
           <a href="/login.php">Login</a>
           <a class="btn" href="/register.php">Join</a>
+          <button id="theme-toggle" class="btn-outline" style="padding: 6px 10px;">🌙</button>
         <?php endif; ?>
       </nav>
     </div>

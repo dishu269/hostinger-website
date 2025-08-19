@@ -7,11 +7,14 @@ declare(strict_types=1);
 const SITE_NAME = 'Dishant Parihar — Digital HQ';
 const SITE_BRAND = 'Dishant Parihar Team';
 
-// Update these for your Hostinger deployment
-const DB_HOST = 'localhost';
-const DB_NAME = 'u782093275_app';
-const DB_USER = 'u782093275_app';
-const DB_PASS = 'Vktmdp@2025';
+// --- IMPORTANT SECURITY NOTICE ---
+// Do not hardcode database credentials. Use environment variables.
+// In your hosting panel (e.g., Hostinger hPanel), set an environment variable
+// named DB_PASS with your actual database password.
+const DB_HOST = getenv('DB_HOST') ?: 'localhost';
+const DB_NAME = getenv('DB_NAME') ?: 'u782093275_app';
+const DB_USER = getenv('DB_USER') ?: 'u782093275_app';
+const DB_PASS = getenv('DB_PASS') ?: ''; // Fallback to empty string if not set
 const DB_CHARSET = 'utf8mb4';
 
 // Session settings
@@ -49,7 +52,9 @@ const ENABLE_SERVICE_WORKER = true;
 const ENABLE_VOICE_INPUT = true;
 
 // Cron security and email notifications
-const CRON_TOKEN = 'change_this_cron_secret'; // Set a strong secret and pass as ?token=...
+// --- IMPORTANT SECURITY NOTICE ---
+// Set a strong, secret CRON_TOKEN as an environment variable in your hosting panel.
+const CRON_TOKEN = getenv('CRON_TOKEN') ?: 'your_default_fallback_token';
 const ENABLE_EMAIL_REPORTS = false; // Set true to email daily admin reports
 
 // App URL and email sender

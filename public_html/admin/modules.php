@@ -19,18 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $stmt = $pdo->prepare('INSERT INTO learning_modules (title, category, description, content_url, type, order_index, published) VALUES (?,?,?,?,?,?,?)');
       $stmt->execute([$title, $category, $description, $contentUrl, $type, $orderIndex, $published]);
       set_flash('success', 'Module created.');
-    } elseif ($action === 'update') {
-      $id = (int)($_POST['id'] ?? 0);
-      $title = sanitize_string($_POST['title'] ?? '');
-      $category = sanitize_string($_POST['category'] ?? '');
-      $description = sanitize_string($_POST['description'] ?? '');
-      $contentUrl = sanitize_string($_POST['content_url'] ?? '');
-      $type = sanitize_string($_POST['type'] ?? 'video');
-      $published = isset($_POST['published']) ? 1 : 0;
-      $orderIndex = (int)($_POST['order_index'] ?? 0);
-      $stmt = $pdo->prepare('UPDATE learning_modules SET title=?, category=?, description=?, content_url=?, type=?, order_index=?, published=? WHERE id = ?');
-      $stmt->execute([$title, $category, $description, $contentUrl, $type, $orderIndex, $published, $id]);
-      set_flash('success', 'Module updated.');
     } elseif ($action === 'delete') {
       $id = (int)($_POST['id'] ?? 0);
       $pdo->prepare('DELETE FROM learning_modules WHERE id = ?')->execute([$id]);
@@ -83,30 +71,21 @@ foreach (get_flashes() as $f) {
   <div class="card">
     <h3>All Modules</h3>
     <table>
-      <thead><tr><th>Title</th><th>Category</th><th>Type</th><th>Published</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Order</th><th>Title</th><th>Category</th><th>Type</th><th>Published</th><th>Actions</th></tr></thead>
       <tbody>
+        <?php if (empty($modules)): ?>
+          <tr><td colspan="6" style="text-align: center;">No modules created yet.</td></tr>
+        <?php endif; ?>
         <?php foreach($modules as $m): ?>
         <tr>
-          <td>
-            <form method="post" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap">
-              <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-              <input type="hidden" name="action" value="update">
-              <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">
-              <input type="text" name="title" value="<?= htmlspecialchars($m['title']) ?>">
-          </td>
-          <td><input type="text" name="category" value="<?= htmlspecialchars($m['category']) ?>"></td>
-          <td>
-            <select name="type">
-              <option value="video" <?= $m['type']==='video'?'selected':'' ?>>Video</option>
-              <option value="pdf" <?= $m['type']==='pdf'?'selected':'' ?>>PDF</option>
-              <option value="article" <?= $m['type']==='article'?'selected':'' ?>>Article</option>
-            </select>
-          </td>
-          <td><input type="checkbox" name="published" <?= (int)$m['published'] ? 'checked' : '' ?>></td>
-          <td>
-              <button class="btn btn-outline">Save</button>
-            </form>
-            <form method="post" onsubmit="return confirm('Delete module?')">
+          <td><?= (int)$m['order_index'] ?></td>
+          <td><?= htmlspecialchars($m['title']) ?></td>
+          <td><?= htmlspecialchars($m['category']) ?></td>
+          <td><span class="badge"><?= htmlspecialchars(strtoupper($m['type'])) ?></span></td>
+          <td><?= (int)$m['published'] ? 'Yes' : 'No' ?></td>
+          <td style="display:flex; gap: 6px;">
+            <a href="/admin/edit_module.php?id=<?= (int)$m['id'] ?>" class="btn btn-outline">Edit</a>
+            <form method="post" onsubmit="return confirm('Are you sure you want to delete this module?')">
               <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= (int)$m['id'] ?>">

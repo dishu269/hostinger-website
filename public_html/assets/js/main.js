@@ -2,6 +2,24 @@
 (function () {
   const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+  // --- Theme Toggler ---
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    // Set initial icon
+    themeToggle.textContent = localStorage.getItem('theme') === 'dark' ? '☀️' : '🌙';
+
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      if (isDark) {
+        localStorage.setItem('theme', 'dark');
+        themeToggle.textContent = '☀️';
+      } else {
+        localStorage.setItem('theme', 'light');
+        themeToggle.textContent = '🌙';
+      }
+    });
+  }
+
   // Progressive enhancement: register service worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -79,21 +97,62 @@
     return 'Listen actively, ask open questions, and connect needs to benefits. Offer a follow-up call.';
   };
 
-  // Lead form offline fallback
+  // Lead form AJAX and offline fallback
   const leadForm = document.querySelector('#lead-form');
   if (leadForm) {
     leadForm.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Always prevent default for AJAX/offline handling
       const form = e.currentTarget;
-      if (!navigator.onLine) {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.textContent;
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Saving...';
+
+      if (navigator.onLine) {
+        // Online: send via AJAX
+        try {
+          const response = await fetch('/user/lead_save.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': data.csrf_token,
+            },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+          if (result.ok) {
+            alert('Lead saved successfully!');
+            form.reset();
+            // Optionally, reload to see the new lead in the list
+            // location.reload();
+          } else {
+            alert('Error: ' + (result.error || 'Could not save lead.'));
+          }
+        } catch (error) {
+          alert('An network error occurred. Your lead has been saved offline instead.');
+          saveLeadOffline(data);
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
+      } else {
+        // Offline: save to localStorage
+        saveLeadOffline(data);
+        alert('Saved offline. Will sync when online.');
+        form.reset();
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      }
+    });
+
+    function saveLeadOffline(data) {
         const all = JSON.parse(localStorage.getItem(queueKey) || '[]');
         all.push(data);
         localStorage.setItem(queueKey, JSON.stringify(all));
-        alert('Saved offline. Will sync when online.');
-        form.reset();
-      }
-    });
+    }
   }
 
   // Resend verification: works under CSP since this is external JS
@@ -138,6 +197,122 @@
       update();
     });
   }
+
+  // Dashboard Chart
+  const weeklyActivityCanvas = document.getElementById('weeklyActivityChart');
+  if (weeklyActivityCanvas) {
+    const dataEl = document.getElementById('weeklyActivityData');
+    try {
+      const chartData = JSON.parse(dataEl.textContent);
+      new Chart(weeklyActivityCanvas, {
+        type: 'bar',
+        data: {
+          labels: chartData.labels,
+          datasets: chartData.datasets,
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+              }
+            }
+          }
+        }
+      });
+    } catch (e) {
+      console.error('Could not parse chart data', e);
+    }
+  }
+
+  // AJAX form submission for creating a task
+  const createTaskForm = document.getElementById('create-task-form');
+  if (createTaskForm) {
+    createTaskForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const formData = new FormData(form);
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.textContent;
+
+      submitButton.disabled = true;
+      submitButton.textContent = 'Saving...';
+
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': formData.get('csrf_token'),
+        },
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message || data.error);
+        if (data.success) {
+          location.reload();
+        } else {
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An unexpected error occurred. Please try again.');
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+      });
+    });
+  }
+
+  // Generic AJAX form handler for simple "save and redirect" forms
+  function handleAjaxForm(formId, redirectUrl) {
+    const form = document.getElementById(formId);
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving...';
+
+        fetch(form.action, {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': formData.get('csrf_token') },
+          body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message || data.error);
+          if (data.success && redirectUrl) {
+            window.location.href = redirectUrl;
+          } else {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('An unexpected error occurred. Please try again.');
+          submitButton.disabled = false;
+          submitButton.textContent = originalButtonText;
+        });
+      });
+    }
+  }
+
+  handleAjaxForm('edit-user-form', '/admin/users.php');
+  handleAjaxForm('edit-module-form', '/admin/modules.php');
+  handleAjaxForm('edit-resource-form', '/admin/resources.php');
+  handleAjaxForm('edit-event-form', '/admin/events.php');
+  handleAjaxForm('edit-message-form', '/admin/messages.php');
+  handleAjaxForm('edit-achievement-form', '/admin/achievements.php');
+
+  // User-side forms
+  handleAjaxForm('user-create-task-form', '/user/tasks.php');
 })();
 
 

@@ -56,7 +56,7 @@ function current_user(): ?array {
     }
     if (!empty($_SESSION['user_id'])) {
         $pdo = get_db();
-        $stmt = $pdo->prepare('SELECT id, name, email, role FROM users WHERE id = ?');
+        $stmt = $pdo->prepare('SELECT id, name, email, role, avatar_url FROM users WHERE id = ?');
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch();
         if ($user) {
@@ -129,7 +129,7 @@ function login_user(string $email, string $password): bool {
         set_flash('error', 'Too many attempts. Try again in a few minutes.');
         return false;
     }
-    $stmt = $pdo->prepare('SELECT id, name, email, password_hash, role, email_verified_at FROM users WHERE email = ?');
+    $stmt = $pdo->prepare('SELECT id, name, email, password_hash, role, email_verified_at, avatar_url FROM users WHERE email = ?');
     $stmt->execute([$email]);
     $user = $stmt->fetch();
     if ($user && password_verify($password, $user['password_hash'])) {
@@ -148,6 +148,7 @@ function login_user(string $email, string $password): bool {
             'name' => $user['name'],
             'email' => $user['email'],
             'role' => $user['role'],
+            'avatar_url' => $user['avatar_url'],
         ];
         $pdo->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$user['id']]);
         record_login_attempt($email, $_SERVER['REMOTE_ADDR'] ?? '', true);

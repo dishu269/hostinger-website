@@ -7,7 +7,15 @@
   --green: #006400;
   --black: #000000;
   --text: #1f2937;
-  --muted: #6b7280;
+  --text-muted: #6b7280;
+  --background-start: #f8fafc;
+  --background-end: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --card-shadow: 0 10px 20px rgba(0,0,0,0.04);
+  --card-shadow-hover: 0 12px 24px rgba(0,0,0,0.06);
+  --input-border: #e5e7eb;
+  --table-header-bg: #f8fafc;
 }
 
 * { box-sizing: border-box; }
@@ -16,7 +24,8 @@ body {
   margin: 0;
   font-family: 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  background: linear-gradient(180deg, var(--background-start) 0%, var(--background-end) 100%);
+  transition: background .3s ease, color .3s ease;
 }
 
 .container {
@@ -29,9 +38,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255,255,255,0.9);
+  background: color-mix(in srgb, var(--card-bg) 90%, transparent);
   backdrop-filter: saturate(180%) blur(10px);
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--card-border);
 }
 .header-inner {
   display: flex;
@@ -85,16 +94,16 @@ body {
   font-size: 28px;
   margin: 0 0 8px;
 }
-.hero p { color: var(--muted); }
+.hero p { color: var(--text-muted); }
 .card {
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 14px;
   padding: 16px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.04);
-  transition: transform .2s ease, box-shadow .2s ease;
+  box-shadow: var(--card-shadow);
+  transition: transform .2s ease, box-shadow .2s ease, background .3s ease, border-color .3s ease;
 }
-.card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.06); }
+.card:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-hover); }
 
 .grid {
   display: grid;
@@ -114,18 +123,20 @@ label { display:block; margin: 10px 0 6px; font-weight: 600; }
 input, select, textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--input-border);
   border-radius: 10px;
   font-family: inherit;
+  background-color: var(--background-end);
+  color: var(--text);
 }
 table { width: 100%; border-collapse: collapse; }
-th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
-th { background: #f8fafc; }
+th, td { padding: 10px; border-bottom: 1px solid var(--card-border); text-align: left; }
+th { background: var(--table-header-bg); }
 
 .badge {
   display: inline-block;
   background: var(--green);
-  color: #fff;
+  color: var(--white);
   padding: 4px 8px;
   border-radius: 999px;
   font-size: 12px;
@@ -133,7 +144,7 @@ th { background: #f8fafc; }
 
 .progress {
   height: 10px;
-  background: #e5e7eb;
+  background: var(--card-border);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -141,14 +152,20 @@ th { background: #f8fafc; }
 
 .motivation {
   background: linear-gradient(135deg, var(--blue), #00356a);
-  color: #fff;
+  color: var(--white);
   border-radius: 14px;
   padding: 16px;
 }
-.motivation .btn-outline { border-color: #ffffff; color: #ffffff; }
-.motivation .btn { background: #FFD700; color: #000; }
+.motivation .btn-outline { border-color: var(--white); color: var(--white); }
+.motivation .btn { background: var(--gold); color: var(--black); }
 
-.site-footer { padding: 24px 0; color: var(--muted); }
+.site-footer { padding: 24px 0; color: var(--text-muted); }
+
+/* Achievement card states */
+.achievement-locked {
+  filter: grayscale(1);
+  opacity: 0.7;
+}
 
 /* Animations */
 .fade-in { opacity: 0; transform: translateY(8px); animation: fadeIn .6s ease forwards; }
@@ -173,4 +190,17 @@ th { background: #f8fafc; }
   .hero h1 { font-size: 36px; }
 }
 
+/* Dark Mode Palette */
+body.dark-mode {
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --background-start: #111827;
+  --background-end: #1f2937;
+  --card-bg: #374151;
+  --card-border: #4b5563;
+  --card-shadow: 0 10px_20px rgba(0,0,0,0.1);
+  --card-shadow-hover: 0 12px 24px rgba(0,0,0,0.15);
+  --input-border: #4b5563;
+  --table-header-bg: #4b5563;
+}
 
