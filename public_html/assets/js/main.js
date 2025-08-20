@@ -122,19 +122,45 @@
   window.addEventListener('online', trySyncQueue);
   trySyncQueue();
 
-  // AI role-play (very simple keyword-based)
-  window.aiRespond = function (message) {
-    const text = (message || '').toLowerCase();
-    if (text.includes('price') || text.includes('cost')) {
-      return 'Great question! Focus on value: quality, health benefits, and long-term savings.';
+  // AI role-play (AJAX-based)
+  window.aiRespond = async function (prompt, buttonEl) {
+    const outputEl = document.getElementById('ai-output');
+    const originalButtonText = buttonEl.textContent;
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+    if (!prompt || prompt.length < 5) {
+      outputEl.textContent = 'Please enter a longer question.';
+      return;
     }
-    if (text.includes('risk') || text.includes('scam')) {
-      return 'Share compliance, company certifications, and transparent business plan details.';
+
+    buttonEl.disabled = true;
+    buttonEl.textContent = 'Thinking...';
+    outputEl.textContent = '...';
+
+    try {
+      const formData = new FormData();
+      formData.append('action', 'get_ai_tip');
+      formData.append('prompt', prompt);
+      formData.append('csrf_token', csrf);
+
+      const response = await fetch('/user/ajax_user_actions.php', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Something went wrong.');
+      }
+
+      outputEl.textContent = result.tip;
+    } catch (error) {
+      outputEl.textContent = 'Error: ' + error.message;
+    } finally {
+      buttonEl.disabled = false;
+      buttonEl.textContent = originalButtonText;
     }
-    if (text.includes('time') || text.includes('busy')) {
-      return 'Suggest micro-steps: 30 minutes daily, leverage templates, and team support.';
-    }
-    return 'Listen actively, ask open questions, and connect needs to benefits. Offer a follow-up call.';
   };
 
   // Lead form AJAX and offline fallback
