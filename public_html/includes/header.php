@@ -53,8 +53,8 @@ $csrf = generate_csrf_token();
               <a href="/user/leaderboard.php">Leaderboard</a>
             <?php endif; ?>
 
-            <a href="/user/profile.php" style="display: inline-flex; align-items: center; gap: 8px;">
-              <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar" style="width: 32px; height: 32px; border-radius: 50%;">
+            <a href="/user/profile.php" class="nav-profile-link">
+              <img class="avatar-sm" src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar">
               <span>My Profile</span>
             </a>
             <a class="btn btn-outline" href="/logout.php">Logout</a>
