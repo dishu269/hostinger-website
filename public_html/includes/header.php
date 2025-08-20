@@ -54,7 +54,7 @@ $csrf = generate_csrf_token();
             <?php endif; ?>
 
             <a href="/user/profile.php" class="nav-profile-link">
-              <img class="avatar-sm" src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar">
+              <img src="<?= htmlspecialchars($user['avatar_url'] ?? 'https://placehold.co/32x32/EFEFEF/AAAAAA&text=') ?>" alt="Your Avatar">
               <span>My Profile</span>
             </a>
             <a class="btn btn-outline" href="/logout.php">Logout</a>
