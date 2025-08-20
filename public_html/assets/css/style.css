@@ -129,9 +129,11 @@ main.container {
   gap: 8px;
 }
 .avatar-sm {
-  width: 32px;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
   border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 .nav a {
   font-size: 1.5rem;
