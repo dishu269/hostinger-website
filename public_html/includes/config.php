@@ -57,6 +57,11 @@ const ENABLE_VOICE_INPUT = true;
 define('CRON_TOKEN', getenv('CRON_TOKEN') ?: 'your_default_fallback_token');
 const ENABLE_EMAIL_REPORTS = false; // Set true to email daily admin reports
 
+// AI Role-play Feature
+// --- IMPORTANT ---
+// Set your OpenAI API key as an environment variable named OPENAI_API_KEY
+define('OPENAI_API_KEY', getenv('OPENAI_API_KEY') ?: 'YOUR_OPENAI_API_KEY_HERE');
+
 // App URL and email sender
 if (!defined('APP_URL')) {
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';

@@ -14,7 +14,7 @@ $modules = $pdo->query('SELECT id, title, category, content_url, type FROM learn
     <h3>AI Role-play (Hinglish)</h3>
     <p>Prospect kya bol raha hai likho, aur turant coaching tip pao.</p>
     <textarea id="ai-input" rows="3" placeholder="Prospect says..."></textarea>
-    <button class="btn" style="margin-top:8px" onclick="document.getElementById('ai-output').textContent = aiRespond(document.getElementById('ai-input').value); document.querySelector('[data-practice-increment]')?.click();">Tip Lo</button>
+    <button class="btn" style="margin-top:8px" onclick="aiRespond(document.getElementById('ai-input').value, this); document.querySelector('[data-practice-increment]')?.click();">Tip Lo</button>
     <div class="card" style="margin-top:8px"><strong>Coach:</strong> <span id="ai-output">Yahan pe suggestion aayega.</span></div>
     <details style="margin-top:8px">
       <summary>Suggested Openers</summary>
