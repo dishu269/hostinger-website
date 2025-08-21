@@ -122,21 +122,6 @@
   window.addEventListener('online', trySyncQueue);
   trySyncQueue();
 
-  // AI role-play (very simple keyword-based)
-  window.aiRespond = function (message) {
-    const text = (message || '').toLowerCase();
-    if (text.includes('price') || text.includes('cost')) {
-      return 'Great question! Focus on value: quality, health benefits, and long-term savings.';
-    }
-    if (text.includes('risk') || text.includes('scam')) {
-      return 'Share compliance, company certifications, and transparent business plan details.';
-    }
-    if (text.includes('time') || text.includes('busy')) {
-      return 'Suggest micro-steps: 30 minutes daily, leverage templates, and team support.';
-    }
-    return 'Listen actively, ask open questions, and connect needs to benefits. Offer a follow-up call.';
-  };
-
   // Lead form AJAX and offline fallback
   const leadForm = document.querySelector('#lead-form');
   if (leadForm) {
