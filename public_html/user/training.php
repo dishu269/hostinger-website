@@ -68,6 +68,24 @@ $modules = $pdo->query('SELECT id, title, category, content_url, type FROM learn
 
 // Fetch all posts and their authors
 $posts = $pdo->query('SELECT p.*, u.name as author_name, u.points as author_points FROM posts p JOIN users u ON u.id = p.user_id ORDER BY p.id DESC')->fetchAll();
+
+// --- N+1 Query Optimization ---
+// 1. Get all post IDs
+$post_ids = array_map(fn($p) => $p['id'], $posts);
+$comments_by_post = [];
+
+// 2. Fetch all comments for these posts in a single query
+if (!empty($post_ids)) {
+    $in_placeholders = implode(',', array_fill(0, count($post_ids), '?'));
+    $comments_stmt = $pdo->prepare("SELECT c.*, u.name as author_name, u.points as author_points FROM comments c JOIN users u ON u.id = c.user_id WHERE c.post_id IN ($in_placeholders) ORDER BY c.created_at ASC");
+    $comments_stmt->execute($post_ids);
+    $all_comments = $comments_stmt->fetchAll();
+
+    // 3. Map comments to their post ID
+    foreach ($all_comments as $comment) {
+        $comments_by_post[$comment['post_id']][] = $comment;
+    }
+}
 ?>
 
 <h2>Training & Motivation Hub</h2>
@@ -134,11 +152,7 @@ $posts = $pdo->query('SELECT p.*, u.name as author_name, u.points as author_poin
 
     <hr style="margin: 15px 0;">
     <h5>Answers</h5>
-    <?php
-        $comments_stmt = $pdo->prepare('SELECT c.*, u.name as author_name, u.points as author_points FROM comments c JOIN users u ON u.id = c.user_id WHERE c.post_id = ? ORDER BY c.created_at ASC');
-        $comments_stmt->execute([$p['id']]);
-        $comments = $comments_stmt->fetchAll();
-    ?>
+    <?php $comments = $comments_by_post[$p['id']] ?? []; ?>
     <?php if (empty($comments)): ?>
         <p style="color:#6b7280; font-size: 14px;">No answers yet. Be the first to help!</p>
     <?php else: ?>
