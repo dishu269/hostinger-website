@@ -14,7 +14,9 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified_at DATETIME NULL,
   verification_token VARCHAR(64) NULL,
   verification_sent_at DATETIME NULL,
-  INDEX idx_users_verify_token (verification_token)
+  points INT NOT NULL DEFAULT 0,
+  INDEX idx_users_verify_token (verification_token),
+  INDEX idx_users_points (points)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS leads (
