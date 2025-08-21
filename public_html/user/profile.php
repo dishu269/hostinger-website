@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stmt = $pdo->prepare('SELECT name, email, city, phone, avatar_url FROM users WHERE id = ?');
+$stmt = $pdo->prepare('SELECT name, email, city, phone, avatar_url, points FROM users WHERE id = ?');
 $stmt->execute([$user['id']]);
 $row = $stmt->fetch();
 
@@ -103,6 +103,8 @@ foreach (get_flashes() as $f) {
     <input type="text" name="name" value="<?= htmlspecialchars($row['name']) ?>">
     <label>Email</label>
     <input type="email" value="<?= htmlspecialchars($row['email']) ?>" disabled>
+    <label>Community Points</label>
+    <input type="text" value="<?= (int)($row['points'] ?? 0) ?>" disabled style="background:#f1f5f9;">
     <label>City</label>
     <input type="text" name="city" value="<?= htmlspecialchars($row['city'] ?? '') ?>">
     <label>Phone</label>
