@@ -6,7 +6,7 @@ Header set X-Content-Type-Options "nosniff"
 Header set X-Frame-Options "SAMEORIGIN"
 Header set X-XSS-Protection "1; mode=block"
 Header set Referrer-Policy "strict-origin-when-cross-origin"
-Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self';"
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src 'self';"
 
 # Remove server signature
 ServerSignature Off
@@ -15,9 +15,19 @@ ServerSignature Off
 Options -Indexes
 
 # Prevent access to sensitive files
-<FilesMatch "\.(env|json|lock|sql|md)$">
+<FilesMatch "\.(env|lock|sql|md)$">
     Order allow,deny
     Deny from all
+</FilesMatch>
+
+# Block JSON files except manifest files
+<FilesMatch "\.json$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+<FilesMatch "(manifest|manifest-modern)\.json$">
+    Order allow,deny
+    Allow from all
 </FilesMatch>
 
 # Protect .htaccess file
