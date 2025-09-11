@@ -56,6 +56,7 @@ foreach (get_flashes() as $f) {
         <td><?= htmlspecialchars($u['created_at'] ?? '-') ?></td>
         <td><?= htmlspecialchars($u['last_login'] ?? '-') ?></td>
         <td style="display:flex; gap: 6px;">
+          <a href="/admin/user_profile.php?id=<?= (int)$u['id'] ?>" class="btn btn-outline">View</a>
           <a href="/admin/edit_user.php?id=<?= (int)$u['id'] ?>" class="btn btn-outline">Edit</a>
           <form method="post" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.')">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
