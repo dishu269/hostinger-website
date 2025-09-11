@@ -1,5 +1,125 @@
-// Main JS for Asclepius Wellness App
+// Enhanced Main JS for Asclepius Wellness App
 (function () {
+  'use strict';
+
+  // Form validation helper
+  function validateForm(form) {
+    let isValid = true;
+    const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+    
+    inputs.forEach(input => {
+      const value = input.value.trim();
+      const errorEl = input.parentElement.querySelector('.form-error');
+      
+      // Reset validation state
+      input.classList.remove('error', 'success');
+      if (errorEl) errorEl.style.display = 'none';
+      
+      // Check if empty
+      if (!value) {
+        input.classList.add('error');
+        if (errorEl) {
+          errorEl.textContent = 'This field is required';
+          errorEl.style.display = 'block';
+        }
+        isValid = false;
+        return;
+      }
+      
+      // Email validation
+      if (input.type === 'email') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          input.classList.add('error');
+          if (errorEl) {
+            errorEl.textContent = 'Please enter a valid email address';
+            errorEl.style.display = 'block';
+          }
+          isValid = false;
+          return;
+        }
+      }
+      
+      // Password validation
+      if (input.type === 'password' && input.name === 'password') {
+        if (value.length < 8) {
+          input.classList.add('error');
+          if (errorEl) {
+            errorEl.textContent = 'Password must be at least 8 characters';
+            errorEl.style.display = 'block';
+          }
+          isValid = false;
+          return;
+        }
+      }
+      
+      // Phone validation
+      if (input.type === 'tel' || input.name === 'mobile') {
+        const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+        if (!phoneRegex.test(value) || value.replace(/\D/g, '').length < 10) {
+          input.classList.add('error');
+          if (errorEl) {
+            errorEl.textContent = 'Please enter a valid phone number';
+            errorEl.style.display = 'block';
+          }
+          isValid = false;
+          return;
+        }
+      }
+      
+      // If all validations pass
+      input.classList.add('success');
+    });
+    
+    return isValid;
+  }
+
+  // Enhanced alert system
+  function showAlert(message, type = 'info') {
+    const alertContainer = document.getElementById('alert-container') || createAlertContainer();
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type}`;
+    alert.style.cssText = 'opacity: 0; transition: opacity 0.3s ease;';
+    alert.innerHTML = `
+      <span>${message}</span>
+      <button class="alert-close" aria-label="Close" style="background: none; border: none; font-size: 1.5rem; line-height: 1; cursor: pointer; margin-left: auto;">&times;</button>
+    `;
+    
+    alertContainer.appendChild(alert);
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+      alert.style.opacity = '1';
+    });
+    
+    // Auto dismiss after 5 seconds
+    const timeout = setTimeout(() => {
+      dismissAlert(alert);
+    }, 5000);
+    
+    // Manual dismiss
+    alert.querySelector('.alert-close').addEventListener('click', () => {
+      clearTimeout(timeout);
+      dismissAlert(alert);
+    });
+  }
+  
+  function dismissAlert(alert) {
+    alert.style.opacity = '0';
+    setTimeout(() => alert.remove(), 300);
+  }
+  
+  function createAlertContainer() {
+    const container = document.createElement('div');
+    container.id = 'alert-container';
+    container.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 1000; max-width: 400px;';
+    document.body.appendChild(container);
+    return container;
+  }
+  
+  // Make showAlert globally available
+  window.showAlert = showAlert;
+
   // --- Page Loader ---
   window.addEventListener('load', () => {
     const loader = document.getElementById('loader');
@@ -60,11 +180,9 @@
     for (const entry of entries) {
       if (entry.isIntersecting) {
         entry.target.classList.add('fade-in');
-        // Optional: unobserve after animating
-        // observer.unobserve(entry.target);
       }
     }
-  }, { threshold: 0.1 }); // Lowered threshold to trigger sooner
+  }, { threshold: 0.1 });
 
   document.querySelectorAll('.card, .kpi, .motivation').forEach((el, index) => {
     // Add a staggered delay, but only for elements that aren't already visible
@@ -104,30 +222,67 @@
     if (!raw) return;
     const queue = JSON.parse(raw);
     if (!Array.isArray(queue) || queue.length === 0) return;
-    for (const item of queue) {
+    
+    showAlert('Syncing offline leads...', 'info');
+    let syncedCount = 0;
+    
+    for (let i = 0; i < queue.length; i++) {
       try {
         const res = await fetch('/user/lead_save.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
-          body: JSON.stringify(item),
+          body: JSON.stringify(queue[i]),
           credentials: 'same-origin'
         });
         if (!res.ok) throw new Error('sync failed');
+        syncedCount++;
+        // Remove synced item from queue
+        queue.splice(i, 1);
+        i--;
       } catch (_) {
-        return; // Stay queued
+        // Keep remaining items in queue
+        break;
       }
     }
-    localStorage.removeItem(queueKey);
+    
+    if (syncedCount > 0) {
+      showAlert(`Synced ${syncedCount} offline lead(s) successfully!`, 'success');
+    }
+    
+    // Update queue
+    if (queue.length > 0) {
+      localStorage.setItem(queueKey, JSON.stringify(queue));
+    } else {
+      localStorage.removeItem(queueKey);
+    }
   }
+  
   window.addEventListener('online', trySyncQueue);
   trySyncQueue();
 
   // Lead form AJAX and offline fallback
   const leadForm = document.querySelector('#lead-form');
   if (leadForm) {
+    // Add form validation elements
+    leadForm.querySelectorAll('input, select, textarea').forEach(input => {
+      const formGroup = input.parentElement;
+      if (!formGroup.querySelector('.form-error')) {
+        const errorEl = document.createElement('div');
+        errorEl.className = 'form-error';
+        formGroup.appendChild(errorEl);
+      }
+    });
+    
     leadForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Always prevent default for AJAX/offline handling
+      e.preventDefault();
       const form = e.currentTarget;
+      
+      // Validate form before submission
+      if (!validateForm(form)) {
+        showAlert('Please fix the errors in the form', 'error');
+        return;
+      }
+      
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
       const submitButton = form.querySelector('button[type="submit"]');
@@ -135,6 +290,7 @@
 
       submitButton.disabled = true;
       submitButton.textContent = 'Saving...';
+      submitButton.classList.add('btn-loading');
 
       if (navigator.onLine) {
         // Online: send via AJAX
@@ -149,27 +305,41 @@
           });
           const result = await response.json();
           if (result.ok) {
-            alert('Lead saved successfully!');
+            showAlert('Lead saved successfully!', 'success');
             form.reset();
-            // Optionally, reload to see the new lead in the list
-            // location.reload();
+            // Reset validation states
+            form.querySelectorAll('.error, .success').forEach(el => {
+              el.classList.remove('error', 'success');
+            });
+            form.querySelectorAll('.form-error').forEach(el => {
+              el.style.display = 'none';
+            });
           } else {
-            alert('Error: ' + (result.error || 'Could not save lead.'));
+            showAlert('Error: ' + (result.error || 'Could not save lead.'), 'error');
           }
         } catch (error) {
-          alert('An network error occurred. Your lead has been saved offline instead.');
+          showAlert('Network error occurred. Your lead has been saved offline.', 'warning');
           saveLeadOffline(data);
         } finally {
           submitButton.disabled = false;
           submitButton.textContent = originalButtonText;
+          submitButton.classList.remove('btn-loading');
         }
       } else {
         // Offline: save to localStorage
         saveLeadOffline(data);
-        alert('Saved offline. Will sync when online.');
+        showAlert('Saved offline. Will sync when online.', 'info');
         form.reset();
+        // Reset validation states
+        form.querySelectorAll('.error, .success').forEach(el => {
+          el.classList.remove('error', 'success');
+        });
+        form.querySelectorAll('.form-error').forEach(el => {
+          el.style.display = 'none';
+        });
         submitButton.disabled = false;
         submitButton.textContent = originalButtonText;
+        submitButton.classList.remove('btn-loading');
       }
     });
 
@@ -197,7 +367,12 @@
     const btn = e.target.closest('[data-copy]');
     if (!btn) return;
     const text = btn.getAttribute('data-copy') || '';
-    try { await navigator.clipboard.writeText(text); alert('Copied'); } catch (_) {}
+    try {
+      await navigator.clipboard.writeText(text);
+      showAlert('Copied to clipboard!', 'success');
+    } catch (err) {
+      showAlert('Failed to copy to clipboard', 'error');
+    }
   });
 
   // WhatsApp helper: data-wa opens wa.me with provided text
@@ -223,7 +398,7 @@
     });
   }
 
-  // Dashboard Chart
+  // Dashboard Chart with enhanced styling
   const weeklyActivityCanvas = document.getElementById('weeklyActivityChart');
   if (weeklyActivityCanvas) {
     const dataEl = document.getElementById('weeklyActivityData');
@@ -233,10 +408,17 @@
         type: 'bar',
         data: {
           labels: chartData.labels,
-          datasets: chartData.datasets,
+          datasets: chartData.datasets.map((dataset, index) => ({
+            ...dataset,
+            backgroundColor: index === 0 ? 'rgba(59, 130, 246, 0.8)' : 'rgba(16, 185, 129, 0.8)',
+            borderColor: index === 0 ? 'rgb(59, 130, 246)' : 'rgb(16, 185, 129)',
+            borderWidth: 1,
+            borderRadius: 6,
+          })),
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           animation: {
             delay: (context) => {
               let delay = 0;
@@ -246,11 +428,33 @@
               return delay;
             },
           },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                usePointStyle: true,
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              borderRadius: 8,
+            }
+          },
           scales: {
             y: {
               beginAtZero: true,
               ticks: {
                 stepSize: 1,
+              },
+              grid: {
+                borderDash: [5, 5],
+              }
+            },
+            x: {
+              grid: {
+                display: false,
               }
             }
           }
@@ -261,18 +465,25 @@
     }
   }
 
-  // AJAX form submission for creating a task
+  // AJAX form submission for creating a task with validation
   const createTaskForm = document.getElementById('create-task-form');
   if (createTaskForm) {
     createTaskForm.addEventListener('submit', function (e) {
       e.preventDefault();
       const form = e.currentTarget;
+      
+      if (!validateForm(form)) {
+        showAlert('Please fix the errors in the form', 'error');
+        return;
+      }
+      
       const formData = new FormData(form);
       const submitButton = form.querySelector('button[type="submit"]');
       const originalButtonText = submitButton.textContent;
 
       submitButton.disabled = true;
       submitButton.textContent = 'Saving...';
+      submitButton.classList.add('btn-loading');
 
       fetch(form.action, {
         method: 'POST',
@@ -283,19 +494,22 @@
       })
       .then(response => response.json())
       .then(data => {
-        alert(data.message || data.error);
         if (data.success) {
-          location.reload();
+          showAlert(data.message || 'Task created successfully!', 'success');
+          setTimeout(() => location.reload(), 1000);
         } else {
+          showAlert(data.error || 'Failed to create task', 'error');
           submitButton.disabled = false;
           submitButton.textContent = originalButtonText;
+          submitButton.classList.remove('btn-loading');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('An unexpected error occurred. Please try again.');
+        showAlert('An unexpected error occurred. Please try again.', 'error');
         submitButton.disabled = false;
         submitButton.textContent = originalButtonText;
+        submitButton.classList.remove('btn-loading');
       });
     });
   }
@@ -304,14 +518,31 @@
   function handleAjaxForm(formId, redirectUrl) {
     const form = document.getElementById(formId);
     if (form) {
+      // Add validation elements
+      form.querySelectorAll('input, select, textarea').forEach(input => {
+        const formGroup = input.parentElement;
+        if (!formGroup.querySelector('.form-error')) {
+          const errorEl = document.createElement('div');
+          errorEl.className = 'form-error';
+          formGroup.appendChild(errorEl);
+        }
+      });
+      
       form.addEventListener('submit', function (e) {
         e.preventDefault();
+        
+        if (!validateForm(form)) {
+          showAlert('Please fix the errors in the form', 'error');
+          return;
+        }
+        
         const formData = new FormData(form);
         const submitButton = form.querySelector('button[type="submit"]');
         const originalButtonText = submitButton.textContent;
 
         submitButton.disabled = true;
         submitButton.textContent = 'Saving...';
+        submitButton.classList.add('btn-loading');
 
         fetch(form.action, {
           method: 'POST',
@@ -320,19 +551,26 @@
         })
         .then(response => response.json())
         .then(data => {
-          alert(data.message || data.error);
-          if (data.success && redirectUrl) {
-            window.location.href = redirectUrl;
+          if (data.success) {
+            showAlert(data.message || 'Saved successfully!', 'success');
+            if (redirectUrl) {
+              setTimeout(() => {
+                window.location.href = redirectUrl;
+              }, 1000);
+            }
           } else {
+            showAlert(data.error || 'Failed to save', 'error');
             submitButton.disabled = false;
             submitButton.textContent = originalButtonText;
+            submitButton.classList.remove('btn-loading');
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert('An unexpected error occurred. Please try again.');
+          showAlert('An unexpected error occurred. Please try again.', 'error');
           submitButton.disabled = false;
           submitButton.textContent = originalButtonText;
+          submitButton.classList.remove('btn-loading');
         });
       });
     }
@@ -347,6 +585,104 @@
 
   // User-side forms
   handleAjaxForm('user-create-task-form', '/user/tasks.php');
+
+  // Add real-time form validation
+  document.addEventListener('input', function(e) {
+    if (e.target.matches('input, select, textarea')) {
+      const input = e.target;
+      const form = input.closest('form');
+      if (form && form.hasAttribute('data-validate')) {
+        validateInput(input);
+      }
+    }
+  });
+
+  function validateInput(input) {
+    const value = input.value.trim();
+    const errorEl = input.parentElement.querySelector('.form-error');
+    
+    // Reset state
+    input.classList.remove('error', 'success');
+    if (errorEl) errorEl.style.display = 'none';
+    
+    // Skip if not required and empty
+    if (!input.hasAttribute('required') && !value) return;
+    
+    // Validate based on type
+    let isValid = true;
+    let errorMessage = '';
+    
+    if (input.hasAttribute('required') && !value) {
+      isValid = false;
+      errorMessage = 'This field is required';
+    } else if (input.type === 'email' && value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        isValid = false;
+        errorMessage = 'Please enter a valid email address';
+      }
+    } else if ((input.type === 'tel' || input.name === 'mobile') && value) {
+      const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+      if (!phoneRegex.test(value) || value.replace(/\D/g, '').length < 10) {
+        isValid = false;
+        errorMessage = 'Please enter a valid phone number';
+      }
+    }
+    
+    // Show validation state
+    if (!isValid) {
+      input.classList.add('error');
+      if (errorEl) {
+        errorEl.textContent = errorMessage;
+        errorEl.style.display = 'block';
+      }
+    } else if (value) {
+      input.classList.add('success');
+    }
+  }
+
+  // Performance optimization: Debounce function
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Add smooth scrolling for anchor links
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a[href^="#"]');
+    if (link) {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').slice(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+
+  // Network status indicator
+  function updateNetworkStatus() {
+    const indicator = document.getElementById('network-status');
+    if (!indicator) return;
+    
+    if (navigator.onLine) {
+      indicator.textContent = 'Online';
+      indicator.className = 'badge badge-success';
+    } else {
+      indicator.textContent = 'Offline';
+      indicator.className = 'badge badge-warning';
+    }
+  }
+
+  window.addEventListener('online', updateNetworkStatus);
+  window.addEventListener('offline', updateNetworkStatus);
+  updateNetworkStatus();
+
 })();
-
-

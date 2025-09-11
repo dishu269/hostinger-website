@@ -40,7 +40,7 @@ $stats = [
       <p><?= htmlspecialchars($motivation['body'] ?? 'Small steps daily lead to massive results. Take action now.') ?></p>
     </div>
     <div class="mt-3">
-      <img src="/assets/img/cover.jpg" alt="Team motivation video placeholder" class="w-full rounded-lg">
+      <img src="/assets/img/placeholder.svg" alt="Team motivation video placeholder" class="w-full rounded-lg" loading="lazy">
     </div>
   </div>
   </section>

@@ -10,6 +10,9 @@ $csrf = generate_csrf_token();
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf) ?>">
+  <meta name="description" content="Digital HQ + Personal CRM + AI Mentor + Training Hub for Asclepius Wellness Team">
+  <meta name="theme-color" content="#002147">
+  <link rel="manifest" href="/manifest.json">
   <title><?= SITE_NAME ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +29,7 @@ $csrf = generate_csrf_token();
   </script>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <div id="loader" class="loader">
     <div class="spinner"></div>
   </div>
@@ -68,4 +72,4 @@ $csrf = generate_csrf_token();
       </div>
     </div>
   </header>
-  <main class="container">
+  <main class="container" id="main-content">

@@ -39,22 +39,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Flash errors
 foreach ($errors as $msg) set_flash('error', $msg);
 foreach (get_flashes() as $f) {
-  $color = $f['type'] === 'success' ? '#10b981' : '#e11d48';
-  echo '<div class="card mt-3" style="border-left:4px solid ' . $color . '">' . htmlspecialchars($f['message']) . '</div>';
+  $alertClass = $f['type'] === 'success' ? 'alert-success' : 'alert-error';
+  echo '<div class="alert ' . $alertClass . ' mt-3">' . htmlspecialchars($f['message']) . '</div>';
 }
 ?>
 
 <div class="card mt-4">
   <h2>Sign In</h2>
-  <form method="post" novalidate>
+  <form method="post" novalidate data-validate>
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
     <input type="text" name="hp" value="" class="d-none" tabindex="-1" autocomplete="off">
 
-    <label for="email">Email</label>
-    <input id="email" type="email" name="email" autocomplete="email" required autofocus>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" autocomplete="email" required autofocus>
+      <div class="form-error"></div>
+    </div>
 
-    <label for="password">Password</label>
-    <input id="password" type="password" name="password" autocomplete="current-password" required>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" autocomplete="current-password" required>
+      <div class="form-error"></div>
+    </div>
 
     <div class="mt-3">
       <button class="btn" type="submit">Login</button>
