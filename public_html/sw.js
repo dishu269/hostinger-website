@@ -3,7 +3,9 @@ const ASSETS = [
   '/',
   '/assets/css/style.css',
   '/assets/js/main.js',
-  '/index.php'
+  '/index.php',
+  '/offline.html',
+  '/assets/img/placeholder.svg'
 ];
 
 self.addEventListener('install', (e) => {
@@ -33,7 +35,7 @@ self.addEventListener('fetch', (e) => {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(request, copy));
         return res;
-      }).catch(() => caches.match(request))
+      }).catch(() => caches.match(request).then(cached => cached || caches.match('/offline.html')))
     );
     return;
   }

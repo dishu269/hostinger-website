@@ -26,8 +26,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '') {
       $errors[] = 'Please enter a valid email address.';
     }
-    if (mb_strlen($password) < 6) {
-      $errors[] = 'Password must be at least 6 characters.';
+    if (mb_strlen($password) < 8) {
+      $errors[] = 'Password must be at least 8 characters.';
     }
 
     if (!$errors && register_user($name, $email, $password, $role)) {
@@ -41,21 +41,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 foreach (get_flashes() as $f) {
-  $color = $f['type'] === 'success' ? '#10b981' : '#e11d48';
-  echo '<div class="card mt-3" style="border-left:4px solid ' . $color . '">' . htmlspecialchars($f['message']) . '</div>';
+  $alertClass = $f['type'] === 'success' ? 'alert-success' : 'alert-error';
+  echo '<div class="alert ' . $alertClass . ' mt-3">' . htmlspecialchars($f['message']) . '</div>';
 }
 ?>
 
 <div class="card mt-4">
   <h2>Create Account <?= $defaultRole === 'admin' ? '(Admin)' : '' ?></h2>
-  <form method="post">
+  <form method="post" data-validate>
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
-    <label>Full Name</label>
-    <input type="text" name="name" required data-voice>
-    <label>Email</label>
-    <input type="email" name="email" required>
-    <label>Password</label>
-    <input type="password" name="password" minlength="6" required>
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input id="name" type="text" name="name" required data-voice autocomplete="name">
+      <div class="form-error"></div>
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" required autocomplete="email">
+      <div class="form-error"></div>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" minlength="8" required autocomplete="new-password">
+      <div class="form-error"></div>
+      <small class="text-muted">Minimum 8 characters</small>
+    </div>
     <div class="mt-3"><button class="btn" type="submit">Register</button></div>
   </form>
   <p class="mt-2"><a href="/login.php">Already have an account?</a></p>

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /includes/
+Disallow: /scripts/
+Disallow: /uploads/
+Disallow: /*.sql$
+Disallow: /*.log$
+Disallow: /*.env$
+
+# Sitemap location (update when created)
+# Sitemap: https://yourdomain.com/sitemap.xml
