@@ -1,9 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header-enhanced.php';
 
 // If already logged in, send to dashboard/admin
 if ($user) {
-  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard.php'));
+  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard-enhanced.php'));
   exit;
 }
 
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       // Safe redirect: only allow relative internal paths
       $next = $_GET['next'] ?? '';
       if (!is_string($next) || $next === '' || !str_starts_with($next, '/')) {
-        $next = ($role === 'admin') ? '/admin/index.php' : '/user/dashboard.php';
+        $next = ($role === 'admin') ? '/admin/index.php' : '/user/dashboard-enhanced.php';
       }
 
       header('Location: ' . $next);
@@ -95,4 +95,4 @@ foreach (get_flashes() as $f) {
   })();
 </script>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer-enhanced.php'; ?>
