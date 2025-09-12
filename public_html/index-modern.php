@@ -1,21 +1,25 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header-enhanced.php';
 
 if ($user) {
-  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard.php'));
+  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard-enhanced.php'));
   exit;
 }
 
 $pdo = get_db();
 $today = (new DateTime('today'))->format('Y-m-d');
-$motivation = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1")->fetch();
+$motivationResult = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1");
+$motivation = $motivationResult ? $motivationResult->fetch() : null;
 $todayTaskStmt = $pdo->prepare('SELECT title, description FROM tasks WHERE task_date = ? OR is_daily = 1 ORDER BY task_date DESC LIMIT 1');
 $todayTaskStmt->execute([$today]);
 $todayTask = $todayTaskStmt->fetch();
+$modulesResult = $pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1');
+$resourcesResult = $pdo->query('SELECT COUNT(*) FROM resources WHERE published = 1');
+$membersResult = $pdo->query('SELECT COUNT(*) FROM users');
 $stats = [
-  'modules' => (int)$pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1')->fetchColumn(),
-  'resources' => (int)$pdo->query('SELECT COUNT(*) FROM resources WHERE published = 1')->fetchColumn(),
-  'members' => (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn(),
+  'modules' => $modulesResult ? (int)$modulesResult->fetchColumn() : 0,
+  'resources' => $resourcesResult ? (int)$resourcesResult->fetchColumn() : 0,
+  'members' => $membersResult ? (int)$membersResult->fetchColumn() : 0,
 ];
 ?>
 <!DOCTYPE html>
