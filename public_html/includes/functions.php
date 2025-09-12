@@ -145,5 +145,6 @@ function get_weekly_funnel_chart_data(PDO $pdo, int $userId): array
  */
 function get_motivation_message(PDO $pdo)
 {
-    return $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1")->fetch();
+    $result = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1");
+    return $result ? $result->fetch() : null;
 }
