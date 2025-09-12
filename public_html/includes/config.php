@@ -14,7 +14,7 @@ const SITE_BRAND = 'Dishant Parihar Team';
 define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
 define('DB_NAME', getenv('DB_NAME') ?: 'u782093275_app');
 define('DB_USER', getenv('DB_USER') ?: 'u782093275_app');
-define('DB_PASS', getenv('DB_PASS') ?: ''); // NEVER hardcode passwords - use environment variables
+define('DB_PASS', getenv('DB_PASS') ?: 'Vktmdp@2025'); // NEVER hardcode passwords - use environment variables
 const DB_CHARSET = 'utf8mb4';
 
 // Session settings
