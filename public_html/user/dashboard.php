@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/header-enhanced.php';
 require_member();
 require_once __DIR__ . '/../includes/functions.php'; // Include the new functions file
 
@@ -181,6 +181,6 @@ $completedModules = $kpis['completed_modules'];
   </div>
 </div>
 
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer-enhanced.php'; ?>
 
 
