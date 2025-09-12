@@ -1,0 +1,186 @@
+diff --git a/public_html/includes/footer-enhanced.php b/public_html/includes/footer-enhanced.php
+index 2c94e5d..5bd8944 100644
+--- a/public_html/includes/footer-enhanced.php
++++ b/public_html/includes/footer-enhanced.php
+@@ -422,5 +422,11 @@
+     <script src="/assets/js/feather.min.js"></script>
+     <script src="/assets/js/chart.min.js"></script>
+     <script src="/assets/js/main.js"></script>
++    <script>
++        // Initialize Feather icons
++        if (typeof feather !== 'undefined') {
++            feather.replace();
++        }
++    </script>
+ </body>
+ </html>
+\ No newline at end of file
+diff --git a/public_html/includes/functions.php b/public_html/includes/functions.php
+index 7ae13ea..67550c8 100644
+--- a/public_html/includes/functions.php
++++ b/public_html/includes/functions.php
+@@ -145,5 +145,6 @@ function get_weekly_funnel_chart_data(PDO $pdo, int $userId): array
+  */
+ function get_motivation_message(PDO $pdo)
+ {
+-    return $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1")->fetch();
++    $result = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1");
++    return $result ? $result->fetch() : null;
+ }
+diff --git a/public_html/index-modern.php b/public_html/index-modern.php
+index f8fb653..8926e7e 100644
+--- a/public_html/index-modern.php
++++ b/public_html/index-modern.php
+@@ -1,21 +1,25 @@
+ <?php
+-require_once __DIR__ . '/includes/header.php';
++require_once __DIR__ . '/includes/header-enhanced.php';
+ 
+ if ($user) {
+-  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard.php'));
++  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard-enhanced.php'));
+   exit;
+ }
+ 
+ $pdo = get_db();
+ $today = (new DateTime('today'))->format('Y-m-d');
+-$motivation = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1")->fetch();
++$motivationResult = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1");
++$motivation = $motivationResult ? $motivationResult->fetch() : null;
+ $todayTaskStmt = $pdo->prepare('SELECT title, description FROM tasks WHERE task_date = ? OR is_daily = 1 ORDER BY task_date DESC LIMIT 1');
+ $todayTaskStmt->execute([$today]);
+ $todayTask = $todayTaskStmt->fetch();
++$modulesResult = $pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1');
++$resourcesResult = $pdo->query('SELECT COUNT(*) FROM resources WHERE published = 1');
++$membersResult = $pdo->query('SELECT COUNT(*) FROM users');
+ $stats = [
+-  'modules' => (int)$pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1')->fetchColumn(),
+-  'resources' => (int)$pdo->query('SELECT COUNT(*) FROM resources WHERE published = 1')->fetchColumn(),
+-  'members' => (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn(),
++  'modules' => $modulesResult ? (int)$modulesResult->fetchColumn() : 0,
++  'resources' => $resourcesResult ? (int)$resourcesResult->fetchColumn() : 0,
++  'members' => $membersResult ? (int)$membersResult->fetchColumn() : 0,
+ ];
+ ?>
+ <!DOCTYPE html>
+diff --git a/public_html/index.php b/public_html/index.php
+index 8be602c..b17af2d 100644
+--- a/public_html/index.php
++++ b/public_html/index.php
+@@ -1,21 +1,25 @@
+ <?php
+-require_once __DIR__ . '/includes/header.php';
++require_once __DIR__ . '/includes/header-enhanced.php';
+ 
+ if ($user) {
+-  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard.php'));
++  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard-enhanced.php'));
+   exit;
+ }
+ 
+ $pdo = get_db();
+ $today = (new DateTime('today'))->format('Y-m-d');
+-$motivation = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1")->fetch();
++$motivationResult = $pdo->query("SELECT title, body FROM messages WHERE active = 1 AND message_type='motivation' ORDER BY id DESC LIMIT 1");
++$motivation = $motivationResult ? $motivationResult->fetch() : null;
+ $todayTaskStmt = $pdo->prepare('SELECT title, description FROM tasks WHERE task_date = ? OR is_daily = 1 ORDER BY task_date DESC LIMIT 1');
+ $todayTaskStmt->execute([$today]);
+ $todayTask = $todayTaskStmt->fetch();
++$modulesResult = $pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1');
++$resourcesResult = $pdo->query('SELECT COUNT(*) FROM resources WHERE published = 1');
++$membersResult = $pdo->query('SELECT COUNT(*) FROM users');
+ $stats = [
+-  'modules' => (int)$pdo->query('SELECT COUNT(*) FROM learning_modules WHERE published = 1')->fetchColumn(),
+-  'resources' => (int)$pdo->query('SELECT COUNT(*) FROM resources WHERE published = 1')->fetchColumn(),
+-  'members' => (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn(),
++  'modules' => $modulesResult ? (int)$modulesResult->fetchColumn() : 0,
++  'resources' => $resourcesResult ? (int)$resourcesResult->fetchColumn() : 0,
++  'members' => $membersResult ? (int)$membersResult->fetchColumn() : 0,
+ ];
+ ?>
+ <section class="hero">
+@@ -105,6 +109,6 @@ $stats = [
+   </div>
+ </section>
+ 
+-<?php require_once __DIR__ . '/includes/footer.php'; ?>
++<?php require_once __DIR__ . '/includes/footer-enhanced.php'; ?>
+ 
+ 
+diff --git a/public_html/login.php b/public_html/login.php
+index 78a6dfa..8feb596 100644
+--- a/public_html/login.php
++++ b/public_html/login.php
+@@ -1,9 +1,9 @@
+ <?php
+-require_once __DIR__ . '/includes/header.php';
++require_once __DIR__ . '/includes/header-enhanced.php';
+ 
+ // If already logged in, send to dashboard/admin
+ if ($user) {
+-  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard.php'));
++  header('Location: ' . ($user['role'] === 'admin' ? '/admin/index.php' : '/user/dashboard-enhanced.php'));
+   exit;
+ }
+ 
+@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+       // Safe redirect: only allow relative internal paths
+       $next = $_GET['next'] ?? '';
+       if (!is_string($next) || $next === '' || !str_starts_with($next, '/')) {
+-        $next = ($role === 'admin') ? '/admin/index.php' : '/user/dashboard.php';
++        $next = ($role === 'admin') ? '/admin/index.php' : '/user/dashboard-enhanced.php';
+       }
+ 
+       header('Location: ' . $next);
+@@ -95,4 +95,4 @@ foreach (get_flashes() as $f) {
+   })();
+ </script>
+ 
+-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+\ No newline at end of file
++<?php require_once __DIR__ . '/includes/footer-enhanced.php'; ?>
+\ No newline at end of file
+diff --git a/public_html/register.php b/public_html/register.php
+index 9157094..a3f847a 100644
+--- a/public_html/register.php
++++ b/public_html/register.php
+@@ -1,8 +1,9 @@
+ <?php
+-require_once __DIR__ . '/includes/header.php';
++require_once __DIR__ . '/includes/header-enhanced.php';
+ 
+ $pdo = get_db();
+-$totalUsers = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
++$countResult = $pdo->query('SELECT COUNT(*) FROM users');
++$totalUsers = $countResult ? (int)$countResult->fetchColumn() : 0;
+ $defaultRole = $totalUsers === 0 ? 'admin' : 'member';
+ 
+ // Redirect if already logged in
+@@ -71,6 +72,6 @@ foreach (get_flashes() as $f) {
+   <p class="mt-2"><a href="/login.php">Already have an account?</a></p>
+ </div>
+ 
+-<?php require_once __DIR__ . '/includes/footer.php'; ?>
++<?php require_once __DIR__ . '/includes/footer-enhanced.php'; ?>
+ 
+ 
+diff --git a/public_html/user/dashboard.php b/public_html/user/dashboard.php
+index d70e65e..d1f9b62 100644
+--- a/public_html/user/dashboard.php
++++ b/public_html/user/dashboard.php
+@@ -1,6 +1,6 @@
+ <?php
+ require_once __DIR__ . '/../includes/auth.php';
+-require_once __DIR__ . '/../includes/header.php';
++require_once __DIR__ . '/../includes/header-enhanced.php';
+ require_member();
+ require_once __DIR__ . '/../includes/functions.php'; // Include the new functions file
+ 
+@@ -181,6 +181,6 @@ $completedModules = $kpis['completed_modules'];
+   </div>
+ </div>
+ 
+-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
++<?php require_once __DIR__ . '/../includes/footer-enhanced.php'; ?>
+ 
+ 

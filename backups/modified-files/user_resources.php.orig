@@ -1,10 +1,9 @@
 <?php
-require_once __DIR__ . '/../includes/header-enhanced.php';
+require_once __DIR__ . '/../includes/header.php';
 require_member();
 $pdo = get_db();
 
-$resourcesResult = $pdo->query('SELECT * FROM resources WHERE published = 1 ORDER BY id DESC');
-$resources = $resourcesResult ? $resourcesResult->fetchAll() : [];
+$resources = $pdo->query('SELECT * FROM resources WHERE published = 1 ORDER BY id DESC')->fetchAll();
 ?>
 
 <h2>Resources</h2>
@@ -28,4 +27,4 @@ $resources = $resourcesResult ? $resourcesResult->fetchAll() : [];
   <?php endif; ?>
 </div>
 
-<?php require_once __DIR__ . '/../includes/footer-enhanced.php'; ?>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
