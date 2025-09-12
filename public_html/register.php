@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/header-enhanced.php';
 
 $pdo = get_db();
-$totalUsers = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+$countResult = $pdo->query('SELECT COUNT(*) FROM users');
+$totalUsers = $countResult ? (int)$countResult->fetchColumn() : 0;
 $defaultRole = $totalUsers === 0 ? 'admin' : 'member';
 
 // Redirect if already logged in
@@ -71,6 +72,6 @@ foreach (get_flashes() as $f) {
   <p class="mt-2"><a href="/login.php">Already have an account?</a></p>
 </div>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require_once __DIR__ . '/includes/footer-enhanced.php'; ?>
 
 
