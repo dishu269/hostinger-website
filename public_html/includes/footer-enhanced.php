@@ -422,5 +422,11 @@
     <script src="/assets/js/feather.min.js"></script>
     <script src="/assets/js/chart.min.js"></script>
     <script src="/assets/js/main.js"></script>
+    <script>
+        // Initialize Feather icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    </script>
 </body>
 </html>
